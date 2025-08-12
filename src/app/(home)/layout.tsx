@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Header from "./ui/Header";
+import Footer from "./ui/Footer";
 
 export const metadata: Metadata = {
   title: "Anônimo Angola",
@@ -12,9 +14,10 @@ export default function Layout({
 }>) {
   return (
     <div>
-      <h1>Header</h1>
+      <Header />
+      
       {children}
-      <h1>Footer</h1>
+      <Footer />
     </div>
   );
 }
