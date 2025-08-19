@@ -13,7 +13,7 @@ export default function Header() {
     setMenuOpen(!isMenuOpen);
   };
   return (
-    <header className="bg-[#D5D5D5] w-full px-16 py-4 flex items-center justify-between">
+    <header className="bg-[#D5D5D5] w-full px-16 py-2 flex items-center justify-between sticky top-0 z-50">
       <div className="flex items-center gap-8 max-w-lg w-full">
         <Link href="/">
           <Image
