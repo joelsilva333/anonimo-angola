@@ -1,7 +1,9 @@
+import UserInterface from "@/app/interfaces/user";
 import { MoveRight } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
+import Cookies from "universal-cookie";
 
 interface MenuInterface {
   title: string;
@@ -10,10 +12,15 @@ interface MenuInterface {
 
 export default function Menu({
   setMenuClosed,
+  user,
+  loading,
 }: {
   setMenuClosed: Dispatch<SetStateAction<boolean>>;
+  user: UserInterface | null;
+  loading: boolean;
 }) {
   const router = useRouter();
+  const cookies = new Cookies();
 
   const handleProfileClick = () => {
     router.push("/profile/1");
@@ -22,6 +29,10 @@ export default function Menu({
 
   const handleLogout = () => {
     setMenuClosed(false);
+
+    localStorage.removeItem("user_data");
+
+    cookies.remove("token", { path: "/" });
     router.push("/login");
   };
 
@@ -51,7 +62,9 @@ export default function Menu({
               alt=""
               className="rounded-full bg-gray-500"
             />
-            <p className="text-sm">Usuário Anônimo</p>
+            <p className="text-sm">
+              {user ? user.anon_name : "Usuário Anônimo"}
+            </p>
           </span>
         </button>
       </li>

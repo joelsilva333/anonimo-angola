@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import Menu from "./Menu";
+import { useUser } from "@/app/hooks/user";
 
 export default function Header() {
   const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
@@ -12,6 +13,9 @@ export default function Header() {
   const toggleMenu = () => {
     setMenuOpen(!isMenuOpen);
   };
+
+  const { user, loading } = useUser();
+
   return (
     <header className="bg-[#D5D5D5] w-full px-16 py-2 flex items-center justify-between sticky top-0 z-50">
       <div className="flex items-center gap-8 max-w-lg w-full">
@@ -56,7 +60,11 @@ export default function Header() {
 
         {isMenuOpen && (
           <div className="absolute right-0 top-12 w-full z-20">
-            <Menu setMenuClosed={setMenuOpen} />
+            <Menu
+              setMenuClosed={setMenuOpen}
+              user={user}
+              loading={loading}
+            />
           </div>
         )}
       </div>

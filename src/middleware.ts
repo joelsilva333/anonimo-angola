@@ -1,28 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(req: NextRequest) {
-  const cookieHeader = req.headers.get("cookie");
-
-  const token = cookieHeader
-    ?.split(";")
-    .find((cookie) => cookie.trim().startsWith("token="))
-    ?.split("=")[1];
+  const token = req.cookies.get("token");
 
   const { pathname } = req.nextUrl;
 
-  if (!token) {
-    if (pathname === "/") {
+  if (!token?.value) {
+    if (pathname === "/" || pathname === "/home") {
       return NextResponse.redirect(new URL("/login", req.url));
     }
   }
 
-  if (token && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/", req.url));
+  if (token?.value && (pathname === "/login" || pathname === "/register")) {
+    return NextResponse.redirect(new URL("/home", req.url));
+  }
+
+  if (pathname === "/") {
+    return NextResponse.redirect(new URL("/home", req.url));
+  }
+
+  if (pathname === "/login" || pathname === "/register") {
+    return NextResponse.next();
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/login", "/register", "/:path*"],
+  matcher: ["/login", "/register", "/home/:path*", "/"],
 };

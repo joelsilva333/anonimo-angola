@@ -2,7 +2,11 @@
 
 import { api } from "@/app/api/config";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { toast, ToastContainer } from "react-toastify";
+import Cookies from "universal-cookie";
 
 interface FormData {
   username: string;
@@ -16,8 +20,13 @@ export default function Login() {
     formState: { errors },
   } = useForm<FormData>();
 
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const cookies = new Cookies();
+
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
+      setLoading(true);
       const response = await api.post("/auth/login", {
         anon_name: data.username,
         password: data.password,
@@ -25,21 +34,30 @@ export default function Login() {
 
       if (response.status === 200) {
         const { token } = response.data;
+        const userData = JSON.stringify(response.data.user);
 
-        document.cookie = `token=${token}; path=/; secure; HttpOnly`;
+        localStorage.setItem("user_data", userData);
 
-        alert("Login bem-sucedido!");
+        cookies.set("token", token, { path: "/", maxAge: 60 * 60 * 24 * 7 });
+
+        router.push("/home");
       } else {
-        alert("Erro ao fazer login. Verifique suas credenciais.");
+        toast.error("Erro ao fazer login. Verifique suas credenciais.");
       }
-    } catch (error) {
-      console.error("Erro ao fazer login:", error);
-      alert("Erro ao fazer login. Por favor, tente novamente.");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        "Erro ao fazer login. Por favor, tente novamente.";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="w-full max-w-md p-8">
+      <ToastContainer />
       <form
         className="flex flex-col gap-4 w-full"
         onSubmit={handleSubmit(onSubmit)}>
@@ -82,9 +100,14 @@ export default function Login() {
 
         <div className="flex flex-col w-full">
           <button
+            disabled={loading}
             type="submit"
-            className="bg-[#1E1E1E] text-white px-4 py-2 rounded-md hover:bg-[#333333] transition-colors duration-300 cursor-pointer w-full">
-            Entrar
+            className="bg-[#1E1E1E] h-12 flex justify-center items-center text-white px-4 py-2 rounded-md hover:bg-[#333333] transition-colors duration-300 cursor-pointer w-full">
+            {loading ? (
+              <div className="w-7 h-7 rounded-full border-t-2 border border-l-2 border-white animate-spin"></div>
+            ) : (
+              "Entrar"
+            )}
           </button>
           <Link
             href="/register"
