@@ -13,7 +13,6 @@ interface MenuInterface {
 export default function Menu({
   setMenuClosed,
   user,
-  loading,
 }: {
   setMenuClosed: Dispatch<SetStateAction<boolean>>;
   user: UserInterface | null;
@@ -23,7 +22,7 @@ export default function Menu({
   const cookies = new Cookies();
 
   const handleProfileClick = () => {
-    router.push("/profile/1");
+    router.push("/home/profile");
     setMenuClosed(false);
   };
 
