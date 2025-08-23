@@ -41,13 +41,11 @@ export default function Login() {
         cookies.set("token", token, { path: "/", maxAge: 60 * 60 * 24 * 7 });
 
         router.push("/home");
-      } else {
-        toast.error("Erro ao fazer login. Verifique suas credenciais.");
-      }
+      } 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const errorMessage =
-        error?.response?.data?.message ||
+        error?.response?.data?.error ||
         "Erro ao fazer login. Por favor, tente novamente.";
       toast.error(errorMessage);
     } finally {
