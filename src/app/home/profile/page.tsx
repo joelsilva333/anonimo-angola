@@ -9,8 +9,6 @@ export default function ProfilePage() {
 	const { userPosts: posts } = useGetUserPosts()
 	const { user } = useUser()
 
-	console.log(user)
-
 	return (
 		<>
 			<div className="w-full flex items-center gap-8 bg-[#595959] p-8">
