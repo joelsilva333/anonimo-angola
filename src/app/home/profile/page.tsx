@@ -11,7 +11,7 @@ export default function ProfilePage() {
 
 	return (
 		<>
-			<div className="w-full flex items-center gap-8 bg-[#595959] p-8">
+			<div className="w-full flex items-center gap-8 bg-gradient-to-r from-[#4B6D94] to-[#10192B]  p-8">
 				{user?.profile_picture && (
 					<Image
 						src={user.profile_picture}
