@@ -41,7 +41,7 @@ export default function Login() {
         cookies.set("token", token, { path: "/", maxAge: 60 * 60 * 24 * 7 });
 
         router.push("/home");
-      } 
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const errorMessage =
@@ -59,7 +59,9 @@ export default function Login() {
       <form
         className="flex flex-col gap-4 w-full"
         onSubmit={handleSubmit(onSubmit)}>
-        <h1 className="font-semibold text-3xl">Iniciar Sessão</h1>
+        <h1 className="font-semibold text-3xl max-lg:text-center max-lg:text-2xl">
+          Iniciar Sessão
+        </h1>
         <div className="flex flex-col gap-1 w-full">
           <label className="flex flex-col gap-2 w-full">
             Identificador Anônimo

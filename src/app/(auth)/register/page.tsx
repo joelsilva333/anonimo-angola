@@ -52,7 +52,7 @@ export default function Register() {
       <form
         className="flex flex-col gap-4 w-full"
         onSubmit={handleSubmit(onSubmit)}>
-        <h1 className="font-semibold text-3xl">Criar Perfil</h1>
+        <h1 className="font-semibold text-3xl max-lg:text-center max-lg:text-2xl">Criar Perfil</h1>
         <div>
           <label className="flex flex-col gap-2 w-full">
             <p>
