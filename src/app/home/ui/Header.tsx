@@ -17,7 +17,7 @@ export default function Header() {
 	const { user, loading } = useUser()
 
 	return (
-		<header className="bg-[#D5D5D5] w-full px-16 py-2 flex items-center justify-between sticky top-0 z-50">
+		<header className="bg-[#D5D5D5] w-full px-16 py-2 max-lg:px-8 flex items-center justify-between sticky top-0 z-50">
 			<div className="flex items-center gap-8 max-w-lg w-full">
 				<Link href="/">
 					<Image
@@ -25,11 +25,11 @@ export default function Header() {
 						width={100}
 						height={44}
 						alt="Anônimo Angola Logo"
-						className="w-36 object-contain"
+						className="w-36 object-contain max-lg:w-24"
 					/>
 				</Link>
 
-				<div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2 w-full">
+				<div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2 w-full max-lg:hidden">
 					<Search className="text-gray-600" />
 					<input
 						type="text"

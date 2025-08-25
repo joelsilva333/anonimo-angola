@@ -16,7 +16,7 @@ export default function Layout({
     <div>
       <Header />
       <div className="flex flex-col items-center min-h-screen bg-[#F5F5F5] pb-8">
-        <div className="max-w-2xl w-full flex items-center flex-col gap-5">
+        <div className="max-w-2xl w-full flex items-center flex-col gap-5 max-lg:px-4">
           {children}
         </div>
       </div>
