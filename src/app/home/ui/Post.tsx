@@ -4,6 +4,7 @@ import {
   EllipsisVertical,
   Forward,
   MessageCircle,
+  Send,
   ThumbsUp,
 } from "lucide-react";
 import Image from "next/image";
@@ -11,6 +12,7 @@ import TimeAgo from "react-timeago";
 import ptBRStrings from "react-timeago/lib/language-strings/pt";
 import buildFormatter from "react-timeago/lib/formatters/buildFormatter";
 import Skeleton from "../components/Skeleton";
+import Comment from "../components/Comment";
 
 const customFormatter = (
   value: number,
@@ -128,28 +130,58 @@ export default function Post({ post }: { post: PostInterface }) {
         </button>
       </div>
 
-      <p className="text-lg max-lg:text-base">{post.text}</p>
+      <p
+        className={`max-lg:text-base ${
+          post.text.length < 100
+            ? "text-3xl max-lg:text-xl"
+            : "text-lg max-lg:text-base"
+        }`}>
+        {post.text}
+      </p>
 
-      <ul className="flex items-center justify-between gap-4 font-semibold text-lg mt-4">
-        <li className="w-full">
-          <button className="w-full flex justify-center items-center p-2 rounded-md hover:bg-gray-100 transition-colors duration-300 gap-2 cursor-pointer">
-            <ThumbsUp />{" "}
-            <span className="max-lg:text-sm max-lg:hidden">Gosto</span>
-          </button>
-        </li>
-        <li className="w-full">
-          <button className="flex w-full justify-center p-2 rounded-md hover:bg-gray-100 transition-colors duration-300 items-center gap-2 cursor-pointer">
-            <MessageCircle />
-            <span className="max-lg:text-sm max-lg:hidden">Comentar</span>
-          </button>
-        </li>
-        <li className="w-full">
-          <button className="flex hover:bg-gray-100 w-full justify-center items-center p-2 rounded-md transition-colors duration-300 gap-2 cursor-pointer">
-            <Forward />
-            <span className="max-lg:text-sm max-lg:hidden">Partilhar</span>
-          </button>
-        </li>
-      </ul>
+      <div className="flex flex-col gap-2">
+        <hr className="border border-gray-200" />
+
+        <ul className="flex items-center justify-between gap-4 font-semibold">
+          <li className="w-full">
+            <button className="w-full flex justify-center items-center p-2 rounded-md hover:bg-gray-100 transition-colors duration-300 gap-2 cursor-pointer">
+              <ThumbsUp className="w-5" />{" "}
+              <span className="max-lg:text-sm max-lg:hidden">Gosto</span>
+            </button>
+          </li>
+          <li className="w-full">
+            <button className="flex w-full justify-center p-2 rounded-md hover:bg-gray-100 transition-colors duration-300 items-center gap-2 cursor-pointer">
+              <MessageCircle className="w-5" />
+              <span className="max-lg:text-sm max-lg:hidden">Comentar</span>
+            </button>
+          </li>
+          <li className="w-full">
+            <button className="flex hover:bg-gray-100 w-full justify-center items-center p-2 rounded-md transition-colors duration-300 gap-2 cursor-pointer">
+              <Forward className="w-5" />
+              <span className="max-lg:text-sm max-lg:hidden">Partilhar</span>
+            </button>
+          </li>
+        </ul>
+
+        <hr className="border border-gray-200" />
+      </div>
+
+      <div>
+        <Comment />
+      </div>
+
+      <form className="flex items-center bg-gray-50">
+        <input
+          className="outline-none w-full  p-4 resize-none"
+          type="text"
+          placeholder="Adicionar um comentário..."
+        />
+        <button
+          type="submit"
+          className="px-4 py-2 hover:bg-gray-200 rounded-md cursor-pointer flex  gap-2">
+          Enviar <Send className="hidden" />
+        </button>
+      </form>
     </div>
   );
 }
