@@ -87,23 +87,19 @@ export default function Home() {
 
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="text-xl max-lg:text-lg text-gray-500 w-fit cursor-text">
+          className="text-xl max-lg:text-lg text-gray-500 w-fit cursor-text text-left">
           Esteja à vontade para desabafar aqui...
         </button>
       </div>
 
       <h1 className="text-lg font-bold text-left w-full">ÚLTIMOS DESABAFOS</h1>
 
-      {combinedPosts.length > 0 ? (
-        combinedPosts.map((post, index) => (
-          <Post
-            key={index}
-            post={post}
-          />
-        ))
-      ) : (
-        <p className="text-gray-500">Nenhum desabafo encontrado.</p>
-      )}
+      {combinedPosts.map((post, index) => (
+        <Post
+          key={index}
+          post={post}
+        />
+      ))}
 
       {menuOpen && (
         <div className="fixed h-screen w-full top-0 flex justify-center items-center bg-white/80 p-4 z-50">

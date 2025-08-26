@@ -61,7 +61,7 @@ export default function Header() {
 				</button>
 
 				{isMenuOpen && (
-					<div className="absolute right-0 top-12 w-full z-20">
+					<div className="absolute right-0 top-11 w-fit z-20">
 						<Menu setMenuClosed={setMenuOpen} user={user} loading={loading} />
 					</div>
 				)}

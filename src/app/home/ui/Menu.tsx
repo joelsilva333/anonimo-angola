@@ -48,7 +48,7 @@ export default function Menu({
 	]
 
 	return (
-		<ul className="w-full flex-col flex rounded-xl bg-white px-2 py-4 gap-2 font-semibold shadow-lg transition-shadow duration-300">
+		<ul className="w-full min-w-xs flex-col flex rounded-xl bg-white px-2 py-4 gap-2 font-semibold shadow-lg transition-shadow duration-300">
 			<li>
 				<button
 					onClick={handleProfileClick}
