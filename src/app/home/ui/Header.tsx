@@ -52,10 +52,10 @@ export default function Header() {
 					{user?.profile_picture && (
 						<Image
 							src={user.profile_picture}
-							width={38}
+							width={385}
 							height={385}
 							alt={user.anon_name}
-							className="rounded-full bg-gray-300"
+							className="rounded-full bg-gray-300 w-10"
 						/>
 					)}
 				</button>

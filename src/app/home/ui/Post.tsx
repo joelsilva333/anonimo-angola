@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PostInterface } from "@/app/interfaces/post";
 import {
   EllipsisVertical,
@@ -9,32 +8,9 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import TimeAgo from "react-timeago";
-import ptBRStrings from "react-timeago/lib/language-strings/pt";
-import buildFormatter from "react-timeago/lib/formatters/buildFormatter";
 import Skeleton from "../components/Skeleton";
 import Comment from "../components/Comment";
-
-const customFormatter = (
-  value: number,
-  unit: string,
-  suffix: string,
-  epochMilliseconds: number,
-  nextFormatter: any,
-  now: () => number
-) => {
-  if (unit === "second" && value < 60) {
-    return "agora mesmo";
-  }
-  const formatter = buildFormatter(ptBRStrings);
-  return formatter(
-    value,
-    unit as any,
-    suffix as any,
-    epochMilliseconds,
-    nextFormatter,
-    now
-  );
-};
+import { customFormatter } from "@/app/utils/customFormatter";
 
 export default function Post({ post }: { post: PostInterface }) {
   if (!post) {
@@ -115,7 +91,7 @@ export default function Post({ post }: { post: PostInterface }) {
           )}
 
           <span className="flex flex-col max-lg:text-sm">
-            <p className="lg:text-lg font-semibold">{post.anon_name}</p>
+            <p className="max-lg: text-lg font-semibold">{post.anon_name}</p>
             <p className="text-sm text-[#757575]">
               <TimeAgo
                 date={post.created_at}
@@ -166,8 +142,19 @@ export default function Post({ post }: { post: PostInterface }) {
         <hr className="border border-gray-200" />
       </div>
 
-      <div>
-        <Comment />
+      <div className="flex flex-col gap-4">
+        {post.comments.length > 0 ? (
+          post.comments.map((comment) => (
+            <Comment
+              key={comment.id}
+              comment={comment}
+            />
+          ))
+        ) : (
+          <p className="text-sm text-center text-gray-400">
+            Nenhum comentário encontrado.
+          </p>
+        )}
       </div>
 
       <form className="flex items-center bg-gray-50">
