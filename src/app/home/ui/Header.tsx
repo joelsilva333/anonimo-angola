@@ -17,7 +17,7 @@ export default function Header() {
 	const { user, loading } = useUser()
 
 	return (
-		<header className="bg-[#D5D5D5] w-full px-16 py-2 max-lg:px-8 flex items-center justify-between sticky top-0 z-50">
+		<header className="bg-background-secondary w-full px-16 py-2 max-lg:px-8 flex items-center justify-between sticky top-0 z-50">
 			<div className="flex items-center gap-8 max-w-lg w-full">
 				<Link href="/">
 					<Image

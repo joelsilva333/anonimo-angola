@@ -1,1 +1,16 @@
 @import "tailwindcss";
+
+@theme {
+	--color-primary: #1e1e1e;
+	--color-secondary: #85cc84;
+	--color-background: #f5f5f5;
+    --color-background-secondary: #d5d5d5;
+}
+
+.btn-primary {
+	@apply bg-primary flex justify-center items-center text-white rounded-md hover:bg-[#333333] transition-colors duration-300 cursor-pointer w-full  h-12 px-4 py-2;
+}
+
+.btn-secondary {
+	@apply bg-transparent border-primary border h-12 flex justify-center items-center text-primary hover:text-white px-4 py-2 rounded-md hover:bg-[#333333] transition-colors duration-300 cursor-pointer w-full;
+}

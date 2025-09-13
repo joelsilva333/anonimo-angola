@@ -47,7 +47,7 @@ export default function Register() {
   };
 
   return (
-    <div className="w-full max-w-md p-8">
+    <div className="w-full max-w-md lg:p-8 px-8 py-4">
       <ToastContainer />
       <form
         className="flex flex-col gap-4 w-full"
@@ -142,7 +142,7 @@ export default function Register() {
           <button
             disabled={loading}
             type="submit"
-            className="bg-[#1E1E1E] h-12 flex justify-center items-center text-white px-4 py-2 rounded-md hover:bg-[#333333] transition-colors duration-300 cursor-pointer w-full">
+            className="btn-primary">
             {loading ? (
               <div className="w-7 h-7 rounded-full border-t-2 border border-l-2 border-white animate-spin"></div>
             ) : (
@@ -152,7 +152,7 @@ export default function Register() {
 
           <Link
             href="/login"
-            className="text-center text-[#1E1E1E] mt-2 hover:underline">
+            className="text-center text-primary mt-2 hover:underline">
             Já tem uma conta?{" "}
             <span className="font-semibold hover:text-[#333333] transition-colors duration-300">
               Entrar
