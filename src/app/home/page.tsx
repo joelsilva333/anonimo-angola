@@ -11,6 +11,7 @@ import Post from "./ui/Post"
 import { useGetPosts } from "../hooks/post"
 import { PostInterface } from "../interfaces/post"
 import { motion, AnimatePresence } from "framer-motion"
+import { useRouter } from "next/navigation"
 
 interface FormData {
 	text: string
@@ -22,6 +23,8 @@ export default function Home() {
 	const [loading, setLoading] = useState<boolean>(false)
 	const { posts } = useGetPosts()
 	const [myPosts, setMyPosts] = useState<PostInterface[]>([])
+
+	const router = useRouter()
 
 	const combinedPosts = [...myPosts, ...posts]
 
@@ -47,6 +50,7 @@ export default function Home() {
 				setMyPosts((prev) => [newPost, ...prev])
 				toast.success("Desabafo criado com sucesso.")
 				reset()
+				router.refresh()
 				setTimeout(() => setMenuOpen(false), 2000)
 			}
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,7 +64,6 @@ export default function Home() {
 		}
 	}
 
-	// Variants para animar em cascata
 	const container = {
 		hidden: { opacity: 0 },
 		show: {
@@ -76,7 +79,6 @@ export default function Home() {
 
 	return (
 		<>
-			{/* HEADER animado */}
 			<motion.div
 				initial={{ opacity: 0, y: -20 }}
 				animate={{ opacity: 1, y: 0 }}
@@ -91,7 +93,6 @@ export default function Home() {
 				</p>
 			</motion.div>
 
-			{/* CARD de criação */}
 			<motion.div
 				whileHover={{ scale: 1.01 }}
 				transition={{ type: "spring", stiffness: 200 }}
@@ -118,10 +119,8 @@ export default function Home() {
 				</button>
 			</motion.div>
 
-			{/* TÍTULO dos posts */}
 			<h1 className="text-lg font-bold text-left w-full">ÚLTIMOS DESABAFOS</h1>
 
-			{/* LISTA de posts animada */}
 			<motion.div
 				variants={container}
 				initial="hidden"
@@ -135,7 +134,6 @@ export default function Home() {
 				))}
 			</motion.div>
 
-			{/* MODAL */}
 			<AnimatePresence>
 				{menuOpen && (
 					<motion.div

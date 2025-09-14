@@ -11,24 +11,28 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import TimeAgo from "react-timeago"
-import Skeleton from "../components/Skeleton"
 import Comment from "../components/Comment"
 import { customFormatter } from "@/app/utils/customFormatter"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { toast } from "react-toastify"
 import { useState } from "react"
 import { api } from "@/app/api/config"
+import { useRouter } from "next/navigation"
 
 interface CommentInput {
 	text: string
 }
 
 export default function Post({ post }: { post: PostInterface }) {
-	const { register, handleSubmit, reset } = useForm<CommentInput>()
+	const { register, handleSubmit, reset, setFocus } = useForm<CommentInput>()
 
 	const [loading, setLoading] = useState(false)
+	const router = useRouter()
 
 	const [comments, setComments] = useState(post.comments || [])
+	const [showAll, setShowAll] = useState(false)
+
+	const displayedComments = showAll ? comments : comments.slice(0, 5)
 
 	const onSubmit: SubmitHandler<CommentInput> = async (data) => {
 		try {
@@ -39,6 +43,8 @@ export default function Post({ post }: { post: PostInterface }) {
 				const newComment = response.data.comment
 				setComments((prev) => [newComment, ...prev])
 				toast.success(response.data.message)
+				router.refresh()
+
 				reset()
 			}
 		} catch (error: any) {
@@ -49,38 +55,6 @@ export default function Post({ post }: { post: PostInterface }) {
 		} finally {
 			setLoading(false)
 		}
-	}
-
-	if (!post) {
-		return (
-			<div className="w-full bg-white p-6 rounded-3xl flex flex-col gap-4 hover:shadow-lg transition-shadow duration-300">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-4">
-						<Skeleton circle width={50} height={50} />
-						<span className="flex flex-col w-full">
-							<Skeleton width="60%" height={20} />
-							<Skeleton width="40%" height={15} />
-						</span>
-					</div>
-					<Skeleton width={30} height={30} />
-				</div>
-
-				<Skeleton width="100%" height={20} className="mt-4" />
-				<Skeleton width="100%" height={15} className="mt-2" />
-
-				<ul className="flex items-center justify-between gap-4 font-semibold text-lg mt-4">
-					<li className="w-full">
-						<Skeleton width="100%" height={40} />
-					</li>
-					<li className="w-full">
-						<Skeleton width="100%" height={40} />
-					</li>
-					<li className="w-full">
-						<Skeleton width="100%" height={40} />
-					</li>
-				</ul>
-			</div>
-		)
 	}
 
 	return (
@@ -132,7 +106,11 @@ export default function Post({ post }: { post: PostInterface }) {
 						</button>
 					</li>
 					<li className="w-full">
-						<button className="flex w-full justify-center p-2 rounded-md hover:bg-gray-100 transition-colors duration-300 items-center gap-2 cursor-pointer">
+						<button
+							onClick={() => setFocus("text")}
+							type="submit"
+							className="flex w-full justify-center p-2 rounded-md hover:bg-gray-100 transition-colors duration-300 items-center gap-2 cursor-pointer"
+						>
 							<MessageCircle className="w-5" />
 							<span className="max-lg:text-sm max-lg:hidden">Comentar</span>
 						</button>
@@ -149,14 +127,23 @@ export default function Post({ post }: { post: PostInterface }) {
 			</div>
 
 			<div className="flex flex-col gap-4">
-				{comments.length > 0 ? (
-					comments.map((comment) => (
+				{displayedComments.length > 0 ? (
+					displayedComments.map((comment) => (
 						<Comment key={comment.id} comment={comment} />
 					))
 				) : (
 					<p className="text-sm text-center text-gray-400">
 						Nenhum comentário encontrado.
 					</p>
+				)}
+
+				{!showAll && displayedComments.length > 5 && (
+					<button
+						className="text-sm text-center text-gray-500 cursor-pointer"
+						onClick={() => setShowAll(true)}
+					>
+						Ver todos comentários
+					</button>
 				)}
 			</div>
 
