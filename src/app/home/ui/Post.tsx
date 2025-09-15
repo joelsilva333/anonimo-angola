@@ -6,7 +6,6 @@ import {
 	EllipsisVertical,
 	Forward,
 	MessageCircle,
-	Send,
 	ThumbsUp,
 } from "lucide-react"
 import Image from "next/image"
@@ -26,9 +25,9 @@ interface CommentInput {
 export default function Post({ post }: { post: PostInterface }) {
 	const { register, handleSubmit, reset, setFocus } = useForm<CommentInput>()
 
-	const [loading, setLoading] = useState(false)
 	const router = useRouter()
 
+	const [loading, setLoading] = useState(false)
 	const [comments, setComments] = useState(post.comments || [])
 	const [showAll, setShowAll] = useState(false)
 
@@ -44,7 +43,6 @@ export default function Post({ post }: { post: PostInterface }) {
 				setComments((prev) => [newComment, ...prev])
 				toast.success(response.data.message)
 				router.refresh()
-
 				reset()
 			}
 		} catch (error: any) {
@@ -133,11 +131,11 @@ export default function Post({ post }: { post: PostInterface }) {
 					))
 				) : (
 					<p className="text-sm text-center text-gray-400">
-						Nenhum comentário encontrado.
+						Nenhum comentário, seja o primeiro a comentar!
 					</p>
 				)}
 
-				{!showAll && displayedComments.length > 5 && (
+				{!showAll && comments.length > 5 && (
 					<button
 						className="text-sm text-center text-gray-500 cursor-pointer"
 						onClick={() => setShowAll(true)}
@@ -166,7 +164,6 @@ export default function Post({ post }: { post: PostInterface }) {
 					) : (
 						"Enviar"
 					)}
-					<Send className="hidden" />
 				</button>
 			</form>
 		</div>
