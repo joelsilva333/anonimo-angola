@@ -123,7 +123,7 @@ export default function Login() {
 				</div>
 			</form>
 
-			<div className="flex items-center gap-4 text-gray-500 w-full my-4">
+			{/* <div className="flex items-center gap-4 text-gray-500 w-full my-4">
 				<hr className="w-full" />
 				ou
 				<hr className="w-full" />
@@ -135,7 +135,7 @@ export default function Login() {
 				className="btn-secondary"
 			>
 				Entrar como anônimo visitante
-			</button>
+			</button> */}
 		</div>
 	)
 }
