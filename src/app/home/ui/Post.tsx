@@ -41,7 +41,6 @@ export default function Post({ post }: { post: PostInterface }) {
 			if (response.status === 201) {
 				const newComment = response.data.comment
 				setComments((prev) => [newComment, ...prev])
-				toast.success(response.data.message)
 				router.refresh()
 				reset()
 			}

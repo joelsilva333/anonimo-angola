@@ -48,7 +48,6 @@ export default function Home() {
 			if (response.status === 201) {
 				const newPost = response.data
 				setMyPosts((prev) => [newPost, ...prev])
-				toast.success("Desabafo criado com sucesso.")
 				reset()
 				router.refresh()
 				setTimeout(() => setMenuOpen(false), 2000)
