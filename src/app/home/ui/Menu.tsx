@@ -31,7 +31,7 @@ export default function Menu({
 
 		localStorage.removeItem("user_data")
 
-		cookies.remove("token", { path: "/" })
+		cookies.remove("aa_token", { path: "/" })
 		router.push("/login")
 	}
 

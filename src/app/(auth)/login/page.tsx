@@ -38,7 +38,7 @@ export default function Login() {
 
 				localStorage.setItem("user_data", userData)
 
-				cookies.set("token", token, { path: "/", maxAge: 60 * 60 * 24 * 7 })
+				cookies.set("aa_token", token, { path: "/", maxAge: 60 * 60 * 24 * 7 })
 
 				router.push("/home")
 			}
