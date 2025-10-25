@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
 			},
 			{
 				protocol: "https",
-				hostname: "anonimo-angola-api-two.vercel.app",
+				hostname: "anonimo-angola-api.vercel.app",
 				port: "",
 				pathname: "/public/avatars/**",
 			},
