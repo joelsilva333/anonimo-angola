@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useState } from "react"
 import Menu from "./Menu"
 import { useUser } from "@/app/hooks/user"
+import { motion, AnimatePresence } from "framer-motion"
 
 export default function Header() {
 	const [isMenuOpen, setMenuOpen] = useState<boolean>(false)
@@ -15,6 +16,13 @@ export default function Header() {
 	}
 
 	const { user, loading } = useUser()
+
+	// Variants para animação do menu
+	const menuVariants = {
+		initial: { opacity: 0, y: -20 },
+		animate: { opacity: 1, y: 0, transition: { duration: 0.2 } },
+		exit: { opacity: 0, y: -20, transition: { duration: 0.15 } },
+	}
 
 	return (
 		<header className="bg-background-secondary w-full px-16 py-2 max-lg:px-8 flex items-center justify-between sticky top-0 z-50">
@@ -39,7 +47,7 @@ export default function Header() {
 				</div>
 			</div>
 
-			<div className="flex  gap-6 relative w-full max-w-xs items-center justify-end">
+			<div className="flex gap-6 relative w-full max-w-xs items-center justify-end">
 				<ul className="flex items-center gap-4">
 					<li>
 						<button className="p-2 rounded-full bg-white/80 hover:bg-gray-200 transition-colors duration-300 cursor-pointer">
@@ -60,11 +68,19 @@ export default function Header() {
 					)}
 				</button>
 
-				{isMenuOpen && (
-					<div className="absolute right-0 top-11 w-fit z-20">
-						<Menu setMenuClosed={setMenuOpen} user={user} loading={loading} />
-					</div>
-				)}
+				<AnimatePresence>
+					{isMenuOpen && (
+						<motion.div
+							className="absolute right-0 top-11 w-fit z-20"
+							variants={menuVariants}
+							initial="initial"
+							animate="animate"
+							exit="exit"
+						>
+							<Menu setMenuClosed={setMenuOpen} user={user} loading={loading} />
+						</motion.div>
+					)}
+				</AnimatePresence>
 			</div>
 		</header>
 	)
