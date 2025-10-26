@@ -6,17 +6,17 @@ export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (!token?.value) {
-    if (pathname === "/" || pathname === "/home") {
+    if (pathname === "/" || pathname === "/") {
       return NextResponse.redirect(new URL("/login", req.url));
     }
   }
 
   if (token?.value && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/home", req.url));
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
   if (pathname === "/") {
-    return NextResponse.redirect(new URL("/home", req.url));
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
   if (pathname === "/login" || pathname === "/register") {
@@ -27,5 +27,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/register", "/home/:path*", "/"],
+  matcher: ["/login", "/register", "/:path*", "/"],
 };

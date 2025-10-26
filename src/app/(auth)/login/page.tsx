@@ -40,7 +40,7 @@ export default function Login() {
 
 				cookies.set("aa_token", token, { path: "/", maxAge: 60 * 60 * 24 * 7 })
 
-				router.push("/home")
+				router.push("/")
 			}
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {

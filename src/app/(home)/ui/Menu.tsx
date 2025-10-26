@@ -22,7 +22,7 @@ export default function Menu({
 	const cookies = new Cookies()
 
 	const handleProfileClick = () => {
-		router.push("/home/profile")
+		router.push("/profile")
 		setMenuClosed(false)
 	}
 
