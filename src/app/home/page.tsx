@@ -9,9 +9,7 @@ import { useUser } from "../hooks/user";
 import { toast, ToastContainer } from "react-toastify";
 import Post from "./ui/Post";
 import { useGetPosts } from "../hooks/post";
-import { PostInterface } from "../interfaces/post";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
 
 interface FormData {
   text: string;
@@ -21,12 +19,7 @@ export default function Home() {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const { user } = useUser();
   const [loading, setLoading] = useState<boolean>(false);
-  const { posts } = useGetPosts();
-  const [myPosts, setMyPosts] = useState<PostInterface[]>([]);
-
-  const router = useRouter();
-
-  const combinedPosts = [...myPosts, ...posts];
+  const { posts, refetch } = useGetPosts();
 
   const {
     register,
@@ -47,9 +40,12 @@ export default function Home() {
 
       if (response.status === 201) {
         const newPost = response.data;
-        setMyPosts((prev) => [newPost, ...prev]);
+
+        refetch({
+          optimisticPosts: (prevPosts) => [newPost, ...prevPosts],
+        });
+
         reset();
-        router.refresh();
         setModalOpen(false);
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -122,9 +118,9 @@ export default function Home() {
         initial="hidden"
         animate="show"
         className="w-full flex flex-col gap-4">
-        {combinedPosts.map((post, index) => (
+        {posts.map((post) => (
           <motion.div
-            key={index}
+            key={post.id}
             variants={item}>
             <Post post={post} />
           </motion.div>

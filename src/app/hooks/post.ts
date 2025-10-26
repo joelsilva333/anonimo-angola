@@ -35,24 +35,34 @@ export function useGetPosts() {
   const [posts, setPosts] = useState<PostInterface[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get("/posts");
-
-        if (response.status === 200) {
-          setPosts(response.data);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar posts", error);
-      } finally {
-        setLoading(false);
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/posts");
+      if (response.status === 200) {
+        setPosts(response.data);
       }
-    };
+    } catch (error) {
+      console.error("Erro ao buscar posts", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const refetch = async (options?: {
+    optimisticPosts?: (prev: PostInterface[]) => PostInterface[];
+  }) => {
+    if (options?.optimisticPosts) {
+      setPosts((prev) => options.optimisticPosts!(prev));
+    }
+    await fetchPosts();
+  };
+
+  useEffect(() => {
     fetchPosts();
   }, []);
 
-  return { posts, loading };
+  return { posts, loading, refetch };
 }
+
+
