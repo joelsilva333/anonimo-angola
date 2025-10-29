@@ -32,6 +32,7 @@ export default function AuthLeftSlider() {
 						alt={slide.alt}
 						width={400}
 						height={300}
+						unoptimized
 						className="object-cover w-full h-full"
 					/>
 				</SwiperSlide>

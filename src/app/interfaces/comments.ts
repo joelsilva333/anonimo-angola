@@ -1,3 +1,5 @@
+import { AnswerInterface } from "./answer";
+
 export interface CommentInterface {
   id: string;
   postId: string;
@@ -19,4 +21,5 @@ export interface PostCommentInterface {
   created_at: Date;
   updated_at: Date;
   status: "active" | "flagged" | "deleted";
+  answer: AnswerInterface[];
 }

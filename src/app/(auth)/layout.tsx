@@ -29,6 +29,7 @@ export default function Layout({
 							alt="Logo"
 							width={500}
 							height={165}
+							unoptimized
 							className="w-40"
 						/>
 					</motion.div>
@@ -67,6 +68,7 @@ export default function Layout({
 						alt="Logo"
 						width={500}
 						height={165}
+						unoptimized
 						className="max-lg:w-52"
 					/>
 				</motion.div>

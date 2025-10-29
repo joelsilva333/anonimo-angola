@@ -97,6 +97,7 @@ export default function Home() {
               src={user.profile_picture}
               width={44}
               height={44}
+              unoptimized
               alt=""
               className="rounded-full bg-gray-500"
             />
@@ -122,7 +123,7 @@ export default function Home() {
           <motion.div
             key={post.id}
             variants={item}>
-            <Post post={post} />
+            <Post post={post} refetch={refetch} />
           </motion.div>
         ))}
       </motion.div>
@@ -149,6 +150,7 @@ export default function Home() {
                       src={user.profile_picture}
                       width={44}
                       height={44}
+                      unoptimized
                       alt=""
                       className="rounded-full bg-gray-500"
                     />

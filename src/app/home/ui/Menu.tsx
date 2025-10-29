@@ -59,6 +59,7 @@ export default function Menu({
                 src={user.profile_picture}
                 width={36}
                 height={36}
+                unoptimized
                 alt={user.anon_name}
                 className="rounded-full bg-gray-500"
               />
