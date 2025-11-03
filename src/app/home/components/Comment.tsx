@@ -3,7 +3,7 @@
 
 import { PostCommentInterface } from "@/app/interfaces/comments";
 import { customFormatter } from "@/app/utils/customFormatter";
-import { EllipsisVertical, MessageCircle, ThumbsUp } from "lucide-react";
+import { EllipsisVertical, MessageCircle, Heart } from "lucide-react";
 import Image from "next/image";
 import TimeAgo from "react-timeago";
 import { useState } from "react";
@@ -93,8 +93,8 @@ export default function Comment({
 
       <div className="flex items-center w-full font-semibold text-sm">
         <button className="flex justify-center items-center px-4 py-1 rounded-md hover:bg-gray-200 transition-colors duration-300 gap-2 cursor-pointer">
-          <ThumbsUp className="w-4" />
-          <span className="max-lg:text-sm max-lg:hidden">Gosto</span>
+          <Heart className="w-4" />
+          <span className="max-lg:text-sm max-lg:hidden">Apoiar</span>
         </button>
 
         <button

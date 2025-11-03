@@ -2,7 +2,7 @@ import {
   EllipsisVertical,
   Forward,
   MessageCircle,
-  ThumbsUp,
+  Heart,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -61,7 +61,7 @@ export default async function ProfilePage({
         <ul className="flex items-center justify-between gap-4 font-semibold text-lg mt-4">
           <li className="w-full">
             <button className="w-full flex justify-center items-center p-2 rounded-md hover:bg-gray-100 transition-colors duration-300 gap-2 cursor-pointer">
-              <ThumbsUp /> Gosto
+              <Heart /> Apoiar
             </button>
           </li>
           <li className="w-full">

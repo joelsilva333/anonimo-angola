@@ -6,7 +6,7 @@ import {
   EllipsisVertical,
   Forward,
   MessageCircle,
-  ThumbsUp,
+  Heart,
 } from "lucide-react";
 import Image from "next/image";
 import TimeAgo from "react-timeago";
@@ -106,8 +106,8 @@ export default function Post({
         <ul className="flex items-center justify-between gap-4 font-semibold">
           <li className="w-full">
             <button className="w-full flex justify-center items-center p-2 rounded-md hover:bg-gray-100 transition-colors duration-300 gap-2 cursor-pointer">
-              <ThumbsUp className="w-5" />{" "}
-              <span className="max-lg:text-sm max-lg:hidden">Gosto</span>
+              <Heart className="w-5" />{" "}
+              <span className="max-lg:text-sm max-lg:hidden">Apoiar</span>
             </button>
           </li>
           <li className="w-full">
