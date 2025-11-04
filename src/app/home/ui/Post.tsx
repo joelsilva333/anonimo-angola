@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/app/api/config";
+import { motion } from "framer-motion";
 
 interface CommentInput {
   text: string;
@@ -25,20 +26,26 @@ export default function Post({
   refetch: (options?: any) => void;
 }) {
   const { register, handleSubmit, reset, setFocus } = useForm<CommentInput>();
-
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
   const [comments, setComments] = useState(post.comments || []);
   const [showAll, setShowAll] = useState(false);
 
-  const displayedComments = showAll ? comments : comments.slice(0, 5);
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(
+    Math.floor(Math.random() * 20) + 1
+  );
+  const [sharesCount, setSharesCount] = useState(
+    Math.floor(Math.random() * 10)
+  );
+
+  const displayedComments = showAll ? comments : comments.slice(0, 1);
 
   const onSubmit: SubmitHandler<CommentInput> = async (data) => {
     try {
       setLoading(true);
       const response = await api.post(`/comments/${post.id}`, data);
-
       if (response.status === 201) {
         const newComment = response.data.comment;
         setComments((prev) => [newComment, ...prev]);
@@ -55,8 +62,22 @@ export default function Post({
     }
   };
 
+  const handleLike = () => {
+    setLiked((prev) => !prev);
+    setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
+  };
+
+  const handleShare = () => {
+    setSharesCount((prev) => prev + 1);
+    navigator.clipboard.writeText(window.location.href);
+    toast.info("Link da publicação copiado para a área de transferência!");
+  };
+
   return (
-    <div className="w-full bg-white p-6 rounded-3xl flex flex-col gap-4 hover:shadow-lg transition-shadow duration-300">
+    <motion.div
+      whileHover={{ scale: 1.01 }}
+      transition={{ duration: 0.2 }}
+      className="w-full bg-white p-6 rounded-3xl flex flex-col gap-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 max-lg:gap-3">
           {post.profile_picture && (
@@ -66,12 +87,12 @@ export default function Post({
               height={50}
               unoptimized
               alt="Profile Picture"
-              className="rounded-full bg-gray-300 max-lg:w-12"
+              className="rounded-full bg-gray-200 max-lg:w-12"
             />
           )}
 
           <span className="flex flex-col max-lg:text-sm">
-            <p className="max-lg: text-lg font-semibold">{post.anon_name}</p>
+            <p className="text-lg font-semibold">{post.anon_name}</p>
             <p className="text-sm text-[#757575]">
               <TimeAgo
                 date={post.created_at}
@@ -87,42 +108,75 @@ export default function Post({
       </div>
 
       <p
-        className={`max-lg:text-base ${
+        className={`leading-relaxed ${
           post.text.length < 100
-            ? "text-3xl max-lg:text-xl"
-            : "text-lg max-lg:text-base"
+            ? "text-2xl max-lg:text-xl"
+            : "text-base max-lg:text-sm"
         }`}>
         {post.text}
       </p>
 
-      <div className="flex flex-col gap-2">
-        <hr className="border border-gray-200" />
+      {likesCount > 0 && (
+        <p className="text-sm text-gray-500 mt-1">
+          {liked
+            ? `Você${likesCount > 1 ? ` e mais ${likesCount - 1}` : ""}`
+            : `${likesCount} pessoa${likesCount > 1 ? "s" : ""} ${
+                likesCount > 1 ? "apoiaram" : "apoiou"
+              }`}
+        </p>
+      )}
 
-        <ul className="flex items-center justify-between gap-4 font-semibold">
+      <div className="flex flex-col gap-2">
+        <hr className="border-gray-200" />
+
+        <ul className="flex items-center justify-between gap-4 font-medium text-gray-700">
           <li className="w-full">
-            <button className="w-full flex justify-center items-center p-2 rounded-md hover:bg-gray-100 transition-colors duration-300 gap-2 cursor-pointer">
-              <Heart className="w-5" />{" "}
-              <span className="max-lg:text-sm max-lg:hidden">Apoiar</span>
-            </button>
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleLike}
+              className={`w-full flex justify-center items-center p-2 rounded-md gap-2 cursor-pointer transition-colors duration-300 ${
+                liked ? "bg-red-50 text-red-500" : "hover:bg-gray-100"
+              }`}>
+              <Heart
+                className={`w-5 transition-all duration-300 ${
+                  liked ? "fill-red-500 text-red-500" : ""
+                }`}
+              />
+              <span className="max-lg:text-sm max-lg:hidden">
+                {liked ? "Apoiou" : "Apoiar"}
+              </span>
+            </motion.button>
           </li>
+
           <li className="w-full">
-            <button
+            <motion.button
+              whileTap={{ scale: 0.9 }}
               onClick={() => setFocus("text")}
-              type="submit"
+              type="button"
               className="flex w-full justify-center p-2 rounded-md hover:bg-gray-100 transition-colors duration-300 items-center gap-2 cursor-pointer">
               <MessageCircle className="w-5" />
               <span className="max-lg:text-sm max-lg:hidden">Comentar</span>
-            </button>
+              <span className="text-xs text-gray-500 ml-1">
+                {comments.length > 0 && comments.length}
+              </span>
+            </motion.button>
           </li>
+
           <li className="w-full">
-            <button className="flex hover:bg-gray-100 w-full justify-center items-center p-2 rounded-md transition-colors duration-300 gap-2 cursor-pointer">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleShare}
+              className="flex hover:bg-gray-100 w-full justify-center items-center p-2 rounded-md transition-colors duration-300 gap-2 cursor-pointer">
               <Forward className="w-5" />
               <span className="max-lg:text-sm max-lg:hidden">Partilhar</span>
-            </button>
+              <span className="text-xs text-gray-500 ml-1">
+                {sharesCount > 0 && sharesCount}
+              </span>
+            </motion.button>
           </li>
         </ul>
 
-        <hr className="border border-gray-200" />
+        <hr className="border-gray-200" />
       </div>
 
       <div className="flex flex-col gap-4">
@@ -131,7 +185,7 @@ export default function Post({
             <Comment
               key={comment.id}
               comment={comment}
-              refetch={refetch} 
+              refetch={refetch}
             />
           ))
         ) : (
@@ -142,7 +196,7 @@ export default function Post({
 
         {!showAll && comments.length > 6 && (
           <button
-            className="text-sm text-center text-gray-500 cursor-pointer"
+            className="text-sm text-center text-gray-500 cursor-pointer hover:text-gray-700"
             onClick={() => setShowAll(true)}>
             Ver todos comentários
           </button>
@@ -151,23 +205,24 @@ export default function Post({
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex items-center bg-gray-50">
+        className="flex items-center bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
         <input
           {...register("text", { required: true })}
-          className={`outline-none w-full px-4 py-2 resize-none`}
+          className="outline-none w-full px-4 py-2 bg-transparent text-sm"
           type="text"
           placeholder="Adicionar um comentário..."
         />
         <button
           type="submit"
-          className="px-4 py-2 bg-secondary rounded-md cursor-pointer flex gap-2 text-white hover:bg-secondary/75 transition-colors duration-300">
+          disabled={loading}
+          className="px-4 py-2 bg-secondary rounded-none cursor-pointer flex gap-2 text-white hover:bg-secondary/80 transition-colors duration-300">
           {loading ? (
-            <div className="w-5 h-5 rounded-full border-t-2 border border-l-2 border-gray-100 animate-spin"></div>
+            <div className="w-5 h-5 border-2 border-gray-100 border-t-transparent rounded-full animate-spin" />
           ) : (
             "Enviar"
           )}
         </button>
       </form>
-    </div>
+    </motion.div>
   );
 }
