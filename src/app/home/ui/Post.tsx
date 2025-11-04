@@ -2,21 +2,16 @@
 "use client";
 
 import { PostInterface } from "@/app/interfaces/post";
-import {
-  EllipsisVertical,
-  Forward,
-  MessageCircle,
-  Heart,
-} from "lucide-react";
+import { EllipsisVertical, Forward, MessageCircle, Heart } from "lucide-react";
 import Image from "next/image";
 import TimeAgo from "react-timeago";
-import Comment from "../components/Comment";
 import { customFormatter } from "@/app/utils/customFormatter";
 import { SubmitHandler, useForm } from "react-hook-form";
+import Comment from "./Comment";
 import { toast } from "react-toastify";
 import { useState } from "react";
-import { api } from "@/app/api/config";
 import { useRouter } from "next/navigation";
+import { api } from "@/app/api/config";
 
 interface CommentInput {
   text: string;
@@ -167,7 +162,7 @@ export default function Post({
           type="submit"
           className="px-4 py-2 bg-secondary rounded-md cursor-pointer flex gap-2 text-white hover:bg-secondary/75 transition-colors duration-300">
           {loading ? (
-            <div className="w-7 h-7 rounded-full border-t-2 border border-l-2 border-gray-500 animate-spin"></div>
+            <div className="w-5 h-5 rounded-full border-t-2 border border-l-2 border-gray-100 animate-spin"></div>
           ) : (
             "Enviar"
           )}

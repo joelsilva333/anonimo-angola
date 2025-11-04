@@ -24,22 +24,26 @@ export default function Comment({
 }) {
   const [replyMode, setReplyMode] = useState(false);
   const [answers, setAnswers] = useState(comment.answer || []);
+  const [showAnswers, setShowAnswers] = useState(false);
+  const [loading, setLoading] = useState(false)
 
   const { register, reset, handleSubmit } = useForm<ReplyInput>();
 
   const onSubmit: SubmitHandler<ReplyInput> = async (data) => {
     try {
+      setLoading(true)
       const response = await api.post(`/answers/${comment.id}`, data);
       refetch();
 
       if (response.status === 201 && response.data?.answer) {
         const newAnswer = response.data.answer;
-
         setAnswers((prev) => [newAnswer, ...prev]);
+        setShowAnswers(true);
       }
     } catch (error) {
       console.error("Erro ao responder:", error);
     } finally {
+      setLoading(false)
       reset();
     }
   };
@@ -92,21 +96,33 @@ export default function Comment({
       <p className="text-sm">{comment.text}</p>
 
       <div className="flex items-center w-full font-semibold text-sm">
-        <button className="flex justify-center items-center px-4 py-1 rounded-md hover:bg-gray-200 transition-colors duration-300 gap-2 cursor-pointer">
+        <button className="flex justify-center items-center px-3 py-1 rounded-md hover:bg-gray-200 transition-colors duration-300 gap-2 cursor-pointer">
           <Heart className="w-4" />
           <span className="max-lg:text-sm max-lg:hidden">Apoiar</span>
         </button>
 
         <button
           onClick={() => setReplyMode(!replyMode)}
-          className="flex justify-center items-center px-4 py-1 rounded-md hover:bg-gray-200 transition-colors duration-300 gap-2 cursor-pointer">
+          className="flex justify-center items-center px-3 py-1 rounded-md hover:bg-gray-200 transition-colors duration-300 gap-2 cursor-pointer">
           <MessageCircle className="w-4" />
           <span className="max-lg:text-sm max-lg:hidden">Responder</span>
         </button>
       </div>
 
+      {Array.isArray(answers) && answers.length > 0 && (
+        <button
+          onClick={() => setShowAnswers(!showAnswers)}
+          className="ml-4 font-semibold text-sm text-secondary hover:underline cursor-pointer">
+          {showAnswers
+            ? "Ocultar respostas"
+            : `Ver ${answers.length} ${
+                answers.length > 1 ? "respostas" : "resposta"
+              }`}
+        </button>
+      )}
+
       <AnimatePresence>
-        {Array.isArray(answers) && answers.length > 0 && (
+        {showAnswers && Array.isArray(answers) && answers.length > 0 && (
           <motion.div
             variants={container}
             initial="hidden"
@@ -145,6 +161,20 @@ export default function Comment({
                     </span>
                   </div>
                   <p className="text-sm">{answer.text}</p>
+
+                  <div className="flex items-center w-full font-semibold max-lg:text-xs text-xs">
+                    <button className="flex justify-center items-center px-2 py-0 rounded-md hover:bg-gray-200 transition-colors duration-300 gap-1 cursor-pointer">
+                      <Heart className="w-3" />
+                      <span className="max-lg:hidden">Apoiar</span>
+                    </button>
+
+                    <button
+                      onClick={() => setReplyMode(!replyMode)}
+                      className="flex justify-center items-center px-2 py-0 rounded-md hover:bg-gray-200 transition-colors duration-300 gap-1 cursor-pointer">
+                      <MessageCircle className="w-3" />
+                      <span className="max-lg:hidden">Responder</span>
+                    </button>
+                  </div>
                 </motion.div>
               ))}
           </motion.div>
@@ -173,14 +203,17 @@ export default function Comment({
                 reset();
                 setReplyMode(false);
               }}
-              className="px-3 py-1 rounded-md bg-gray-200 text-sm hover:bg-gray-300 transition-colors duration-300 cursor-pointer">
+              className="px-3 py-2 flex text-center items-center justify-center rounded-md bg-gray-200 text-sm hover:bg-gray-300 transition-colors duration-300 cursor-pointer">
               Cancelar
             </button>
 
             <button
               type="submit"
-              className="px-3 py-1 rounded-md bg-secondary text-white text-sm hover:bg-secondary/75 transition-colors duration-300 cursor-pointer">
-              Responder
+              disabled={loading}
+              className="px-3 py-2 flex text-center items-center justify-center rounded-md bg-secondary text-white text-sm hover:bg-secondary/75 transition-colors duration-300 cursor-pointer w-24">
+             {
+              loading ?<div className="w-5 h-5 rounded-full border-t-2 border border-l-2 border-gray-100 animate-spin"></div>   : "Responder"
+             }
             </button>
           </div>
         </motion.form>
