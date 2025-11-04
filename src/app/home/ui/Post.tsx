@@ -135,11 +135,11 @@ export default function Post({
               whileTap={{ scale: 0.9 }}
               onClick={handleLike}
               className={`w-full flex justify-center items-center p-2 rounded-md gap-2 cursor-pointer transition-colors duration-300 ${
-                liked ? "bg-red-50 text-red-500" : "hover:bg-gray-100"
+                liked ? "bg-red-50 text-secondary" : "hover:bg-gray-100"
               }`}>
               <Heart
                 className={`w-5 transition-all duration-300 ${
-                  liked ? "fill-red-500 text-red-500" : ""
+                  liked ? "fill-secondary text-secondary" : ""
                 }`}
               />
               <span className="max-lg:text-sm max-lg:hidden">
