@@ -131,7 +131,7 @@ export default function Post({
             <Comment
               key={comment.id}
               comment={comment}
-              refetch={refetch}
+              refetch={refetch} 
             />
           ))
         ) : (
@@ -140,7 +140,7 @@ export default function Post({
           </p>
         )}
 
-        {!showAll && comments.length > 5 && (
+        {!showAll && comments.length > 6 && (
           <button
             className="text-sm text-center text-gray-500 cursor-pointer"
             onClick={() => setShowAll(true)}>

@@ -23,27 +23,37 @@ export default function Comment({
   refetch: (options?: any) => void;
 }) {
   const [replyMode, setReplyMode] = useState(false);
-  const [answers, setAnswers] = useState(comment.answer || []);
+  const [answers, setAnswers] = useState(
+    (comment.answer || []).sort(
+      (a: any, b: any) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
+  );
   const [showAnswers, setShowAnswers] = useState(false);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const { register, reset, handleSubmit } = useForm<ReplyInput>();
 
   const onSubmit: SubmitHandler<ReplyInput> = async (data) => {
     try {
-      setLoading(true)
+      setLoading(true);
       const response = await api.post(`/answers/${comment.id}`, data);
       refetch();
 
       if (response.status === 201 && response.data?.answer) {
         const newAnswer = response.data.answer;
-        setAnswers((prev) => [newAnswer, ...prev]);
+        setAnswers((prev) =>
+          [...prev, newAnswer].sort(
+            (a: any, b: any) =>
+              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          )
+        );
         setShowAnswers(true);
       }
     } catch (error) {
       console.error("Erro ao responder:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
       reset();
     }
   };
@@ -211,9 +221,11 @@ export default function Comment({
               type="submit"
               disabled={loading}
               className="px-3 py-2 flex text-center items-center justify-center rounded-md bg-secondary text-white text-sm hover:bg-secondary/75 transition-colors duration-300 cursor-pointer w-24">
-             {
-              loading ?<div className="w-5 h-5 rounded-full border-t-2 border border-l-2 border-gray-100 animate-spin"></div>   : "Responder"
-             }
+              {loading ? (
+                <div className="w-5 h-5 rounded-full border-t-2 border border-l-2 border-gray-100 animate-spin"></div>
+              ) : (
+                "Responder"
+              )}
             </button>
           </div>
         </motion.form>
