@@ -61,7 +61,7 @@ export default function PostDetailPage() {
         transition={{ delay: 0.1 }}
         className="w-full text-left pb-2 mt-4">
         <h1 className="text-xl font-bold uppercase tracking-wide text-gray-800">
-          Desabafo de {post.user}
+          Desabafo de {post.user.anon_name}
         </h1>
       </motion.div>
 

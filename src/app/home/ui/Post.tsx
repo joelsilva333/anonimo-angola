@@ -33,11 +33,9 @@ export default function Post({
   const [showAll, setShowAll] = useState(false);
 
   const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(
-    Math.floor(Math.random() * 20) + 1
-  );
+
   const [sharesCount, setSharesCount] = useState(
-    Math.floor(Math.random() * 10)
+    Math.floor(Math.random() * 10),
   );
 
   const displayedComments = showAll ? comments : comments.slice(0, 1);
@@ -64,7 +62,6 @@ export default function Post({
 
   const handleLike = () => {
     setLiked((prev) => !prev);
-    setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
   };
 
   const handleShare = () => {
@@ -91,8 +88,21 @@ export default function Post({
             />
           )}
 
+          {post.user.profile_picture && (
+            <Image
+              src={post.user.profile_picture}
+              width={50}
+              height={50}
+              unoptimized
+              alt="Profile Picture"
+              className="rounded-full bg-gray-200 max-lg:w-12"
+            />
+          )}
+
           <span className="flex flex-col max-lg:text-sm">
-            <p className="text-lg font-semibold">{post.anon_name}</p>
+            <p className="text-lg font-semibold">
+              {post.anon_name || post.user.anon_name}
+            </p>
             <p className="text-sm text-[#757575]">
               <TimeAgo
                 date={post.created_at}
@@ -116,12 +126,12 @@ export default function Post({
         {post.text}
       </p>
 
-      {likesCount > 0 && (
+      {post.like > 0 && (
         <p className="text-sm text-gray-500 mt-1">
           {liked
-            ? `Você${likesCount > 1 ? ` e mais ${likesCount - 1}` : ""}`
-            : `${likesCount} pessoa${likesCount > 1 ? "s" : ""} ${
-                likesCount > 1 ? "apoiaram" : "apoiou"
+            ? `Você${post.like > 1 ? ` e mais ${post.like - 1}` : ""}`
+            : `${post.like} pessoa${post.like > 1 ? "s" : ""} ${
+                post.like > 1 ? "apoiaram" : "apoiou"
               }`}
         </p>
       )}

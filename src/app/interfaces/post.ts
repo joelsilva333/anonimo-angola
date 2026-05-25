@@ -1,12 +1,15 @@
 import { PostCommentInterface } from "./comments";
+import UserInterface from "./user";
 
 export interface PostInterface {
   id: string;
   user_id: string;
   anon_name: string;
-  user: string;
+  user: UserInterface;
   profile_picture?: string;
   text: string;
+  like: number;
+  dislike: number;
   created_at: Date;
   updated_at: Date;
   status: "active" | "flagged" | "deleted";
