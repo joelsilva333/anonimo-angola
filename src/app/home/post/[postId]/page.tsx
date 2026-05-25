@@ -9,10 +9,12 @@ import Post from "../../ui/Post";
 export default function PostDetailPage() {
   const params = useParams();
   const router = useRouter();
-  
+
   // Extrai o postId de forma segura a partir dos parâmetros da URL
   const postId = params.postId as string;
   const { post, loading, error, refetch } = useGetPostById(postId);
+
+  console.log(post);
 
   if (loading) {
     return (
@@ -30,8 +32,7 @@ export default function PostDetailPage() {
         </p>
         <button
           onClick={() => router.push("/")}
-          className="text-sm font-semibold text-white bg-primary px-4 py-2 rounded-md hover:bg-opacity-90 transition-all cursor-pointer"
-        >
+          className="text-sm font-semibold text-white bg-primary px-4 py-2 rounded-md hover:bg-opacity-90 transition-all cursor-pointer">
           Voltar para o Início
         </button>
       </div>
@@ -44,12 +45,10 @@ export default function PostDetailPage() {
       <motion.div
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
-        className="w-full flex justify-start pt-6"
-      >
+        className="w-full flex justify-start pt-6">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors duration-200 font-medium text-sm cursor-pointer group"
-        >
+          className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors duration-200 font-medium text-sm cursor-pointer group">
           <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
           Voltar aos desabafos
         </button>
@@ -60,21 +59,21 @@ export default function PostDetailPage() {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="w-full text-left pb-2 mt-4"
-      >
+        className="w-full text-left pb-2 mt-4">
         <h1 className="text-xl font-bold uppercase tracking-wide text-gray-800">
-          Desabafo de {post.anon_name}
+          Desabafo de {post.user}
         </h1>
       </motion.div>
 
-      {/* Componente do Post único integrado */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="w-full"
-      >
-        <Post post={post} refetch={refetch} />
+        className="w-full">
+        <Post
+          post={post}
+          refetch={refetch}
+        />
       </motion.div>
     </>
   );

@@ -4,6 +4,7 @@ export interface PostInterface {
   id: string;
   user_id: string;
   anon_name: string;
+  user: string;
   profile_picture?: string;
   text: string;
   created_at: Date;
