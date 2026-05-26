@@ -60,8 +60,30 @@ export default function Post({
     }
   };
 
-  const handleLike = () => {
-    setLiked((prev) => !prev);
+  const handleLike = async () => {
+    const type = liked ? "dislike" : "like";
+
+    try {
+      setLiked((prev) => !prev);
+      const response = await api.post(`/reactions/post/${post.id}`, {
+        type: type,
+      });
+
+      if (response.status === 200) {
+        refetch();
+      }
+    } catch (error: any) {
+      if (error?.response?.status === 400) {
+        toast.error(
+          "ID Inexistente. Por favor, atualize a página e tente novamente.",
+        );
+      } else {
+        toast.error(
+          error?.response?.data?.message ||
+            "Erro ao reagir ao post. Por favor, tente novamente.",
+        );
+      }
+    }
   };
 
   const handleShare = () => {
@@ -88,7 +110,7 @@ export default function Post({
             />
           )}
 
-          {post.user.profile_picture && (
+          {post.user?.profile_picture && (
             <Image
               src={post.user.profile_picture}
               width={50}
@@ -101,7 +123,7 @@ export default function Post({
 
           <span className="flex flex-col max-lg:text-sm">
             <p className="text-lg font-semibold">
-              {post.anon_name || post.user.anon_name}
+              {post.anon_name || post.user?.anon_name}
             </p>
             <p className="text-sm text-[#757575]">
               <TimeAgo
