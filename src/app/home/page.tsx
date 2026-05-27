@@ -36,8 +36,8 @@ export default function Home() {
 
     try {
       setLoading(true);
-      const response = await api.post(`/posts/${user?.id}`, data);
-
+      const response = await api.post(`/posts`, data);
+      
       if (response.status === 201) {
         const newPost = response.data;
 

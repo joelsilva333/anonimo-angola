@@ -10,6 +10,8 @@ export interface PostInterface {
   text: string;
   like: number;
   dislike: number;
+  has_reacted: boolean | null;
+  reaction_type: "like" | "dislike" | null;
   created_at: Date;
   updated_at: Date;
   status: "active" | "flagged" | "deleted";
