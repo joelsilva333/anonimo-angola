@@ -32,15 +32,12 @@ export default function Post({
   const [comments, setComments] = useState(post.comments || []);
   const [showAll, setShowAll] = useState(false);
 
-  const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(
-    Math.floor(Math.random() * 20) + 1
-  );
   const [sharesCount, setSharesCount] = useState(
-    Math.floor(Math.random() * 10)
+    Math.floor(Math.random() * 10),
   );
-
-  const displayedComments = showAll ? comments : comments.slice(0, 1);
+  
+  const INITIAL_COMMENTS_LIMIT = 2;
+  const displayedComments = showAll ? comments : comments.slice(0, INITIAL_COMMENTS_LIMIT);
 
   const onSubmit: SubmitHandler<CommentInput> = async (data) => {
     try {
@@ -62,9 +59,29 @@ export default function Post({
     }
   };
 
-  const handleLike = () => {
-    setLiked((prev) => !prev);
-    setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
+  const handleLike = async () => {
+    const type = post.has_reacted === true && post.reaction_type === "like" ? "dislike" : "like";
+
+    try {
+      const response = await api.post(`/reactions/post/${post.id}`, {
+        type: type,
+      });
+
+      if (response.status === 200) {
+        refetch();
+      }
+    } catch (error: any) {
+      if (error?.response?.status === 400) {
+        toast.error(
+          "ID Inexistente. Por favor, atualize a página e tente novamente.",
+        );
+      } else {
+        toast.error(
+          error?.response?.data?.message ||
+            "Erro ao reagir ao post. Por favor, tente novamente.",
+        );
+      }
+    }
   };
 
   const handleShare = () => {
@@ -91,8 +108,21 @@ export default function Post({
             />
           )}
 
+          {post.user?.profile_picture && (
+            <Image
+              src={post.user.profile_picture}
+              width={50}
+              height={50}
+              unoptimized
+              alt="Profile Picture"
+              className="rounded-full bg-gray-200 max-lg:w-12"
+            />
+          )}
+
           <span className="flex flex-col max-lg:text-sm">
-            <p className="text-lg font-semibold">{post.anon_name}</p>
+            <p className="text-lg font-semibold">
+              {post.anon_name || post.user?.anon_name}
+            </p>
             <p className="text-sm text-[#757575]">
               <TimeAgo
                 date={post.created_at}
@@ -116,12 +146,12 @@ export default function Post({
         {post.text}
       </p>
 
-      {likesCount > 0 && (
+      {post.like > 0 && (
         <p className="text-sm text-gray-500 mt-1">
-          {liked
-            ? `Você${likesCount > 1 ? ` e mais ${likesCount - 1}` : ""}`
-            : `${likesCount} pessoa${likesCount > 1 ? "s" : ""} ${
-                likesCount > 1 ? "apoiaram" : "apoiou"
+          {post.has_reacted === true && post.reaction_type === "like"
+            ? `Você${post.like > 1 ? ` e mais ${post.like - 1}` : ""}`
+            : `${post.like} pessoa${post.like > 1 ? "s" : ""} ${
+                post.like > 1 ? "apoiaram" : "apoiou"
               }`}
         </p>
       )}
@@ -135,15 +165,19 @@ export default function Post({
               whileTap={{ scale: 0.9 }}
               onClick={handleLike}
               className={`w-full flex justify-center items-center p-2 rounded-md gap-2 cursor-pointer transition-colors duration-300 ${
-                liked ? "bg-secondary/20 text-secondary" : "hover:bg-gray-100"
+                post.has_reacted === true && post.reaction_type === "like"
+                  ? "bg-secondary/20 text-secondary"
+                  : "hover:bg-gray-100"
               }`}>
               <Heart
                 className={`w-5 transition-all duration-300 ${
-                  liked ? "fill-secondary text-secondary" : ""
+                  post.has_reacted === true && post.reaction_type === "like"
+                    ? "fill-secondary text-secondary"
+                    : ""
                 }`}
               />
               <span className="max-lg:text-sm max-lg:hidden">
-                {liked ? "Apoiou" : "Apoiar"}
+                {post.has_reacted === true && post.reaction_type === "like" ? "Apoiou" : "Apoiar"}
               </span>
             </motion.button>
           </li>
@@ -179,6 +213,7 @@ export default function Post({
         <hr className="border-gray-200" />
       </div>
 
+      {/* Seção de comentários */}
       <div className="flex flex-col gap-4">
         {displayedComments.length > 0 ? (
           displayedComments.map((comment) => (
@@ -194,11 +229,23 @@ export default function Post({
           </p>
         )}
 
-        {!showAll && comments.length > 6 && (
+        {/* CORREÇÃO AQUI: O botão agora aparece se não estiver a mostrar tudo E a quantidade de comentários for maior que o limite inicial (1) */}
+        {!showAll && comments.length > INITIAL_COMMENTS_LIMIT && (
           <button
-            className="text-sm text-center text-gray-500 cursor-pointer hover:text-gray-700"
+            type="button"
+            className="text-sm text-center text-[#757575] font-medium cursor-pointer hover:text-gray-900 mt-2 self-start"
             onClick={() => setShowAll(true)}>
-            Ver todos comentários
+            Ver mais comentários ({comments.length - INITIAL_COMMENTS_LIMIT})
+          </button>
+        )}
+
+        {/* OPCIONAL: Botão para recolher os comentários caso queira */}
+        {showAll && comments.length > INITIAL_COMMENTS_LIMIT && (
+          <button
+            type="button"
+            className="text-sm text-center text-[#757575] font-medium cursor-pointer hover:text-gray-900 mt-2 self-start"
+            onClick={() => setShowAll(false)}>
+            Ocultar comentários
           </button>
         )}
       </div>
