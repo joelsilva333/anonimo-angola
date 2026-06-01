@@ -8,6 +8,10 @@ export interface CommentInterface {
   anon_name: string;
   profile_picture: string;
   text: string;
+  like: number;
+  dislike: number;
+  has_reacted: boolean | null;
+  reaction_type: "like" | "dislike" | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -20,6 +24,10 @@ export interface PostCommentInterface {
   text: string;
   created_at: Date;
   updated_at: Date;
+  like: number;
+  dislike: number;
+  has_reacted: boolean | null;
+  reaction_type: "like" | "dislike" | null;
   status: "active" | "flagged" | "deleted";
-  answer: AnswerInterface[];
+  answers: AnswerInterface[];
 }

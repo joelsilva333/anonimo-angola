@@ -24,29 +24,44 @@ export default function Comment({
 }) {
   const [replyMode, setReplyMode] = useState(false);
   const [answers, setAnswers] = useState(
-    (comment.answer || []).sort(
+    (comment.answers || []).sort(
       (a: any, b: any) =>
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    )
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    ),
   );
   const [showAnswers, setShowAnswers] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const [commentLiked, setCommentLiked] = useState(
+    comment.has_reacted || false,
+  );
+  const [commentLikesCount, setCommentLikesCount] = useState(comment.like || 0);
 
   const { register, reset, handleSubmit } = useForm<ReplyInput>();
 
   const onSubmit: SubmitHandler<ReplyInput> = async (data) => {
     try {
       setLoading(true);
-      const response = await api.post(`/answers/${comment.id}`, data);
+      const response = await api.post(`/answers/${comment.id}`, {
+        text: data.text,
+      });
+
       refetch();
 
       if (response.status === 201 && response.data?.answer) {
         const newAnswer = response.data.answer;
+        const formattedNewAnswer = {
+          ...newAnswer,
+          has_reacted: false,
+          likes: 0,
+        };
+
         setAnswers((prev) =>
-          [...prev, newAnswer].sort(
+          [...prev, formattedNewAnswer].sort(
             (a: any, b: any) =>
-              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-          )
+              new Date(a.created_at).getTime() -
+              new Date(b.created_at).getTime(),
+          ),
         );
         setShowAnswers(true);
       }
@@ -55,6 +70,69 @@ export default function Comment({
     } finally {
       setLoading(false);
       reset();
+    }
+  };
+
+  const handleCommentLike = async () => {
+    const previousLiked = commentLiked;
+    const previousCount = commentLikesCount;
+
+    setCommentLiked(!previousLiked);
+    setCommentLikesCount((prev) => (previousLiked ? prev - 1 : prev + 1));
+
+    try {
+      const response = await api.post(`/reactions/comment/${comment.id}`, {
+        type: previousLiked ? "dislike" : "like",
+      });
+
+      if (response.status === 200) {
+        refetch();
+      }
+    } catch (error) {
+      console.error("Erro ao reagir ao comentário:", error);
+      setCommentLiked(previousLiked);
+      setCommentLikesCount(previousCount);
+    }
+  };
+
+  const handleAnswerLike = async (answerId: string, currentLiked: boolean) => {
+    setAnswers((prevAnswers) =>
+      prevAnswers.map((ans) => {
+        if (ans.id === answerId) {
+          return {
+            ...ans,
+            has_reacted: !currentLiked,
+            like: currentLiked ? (ans.like || 1) - 1 : (ans.like || 0) + 1,
+          };
+        }
+        return ans;
+      }),
+    );
+
+    try {
+      const response = await api.post(`/reactions/answer/${answerId}`, {
+        type: currentLiked ? "dislike" : "like",
+      });
+
+      if (response.status === 200) {
+        refetch();
+      }
+    } catch (error) {
+      console.error("Erro ao reagir à resposta:", error);
+      setAnswers((prevAnswers) =>
+        prevAnswers.map((ans) => {
+          if (ans.id === answerId) {
+            return {
+              ...ans,
+              has_reacted: currentLiked,
+              likes_count: currentLiked
+                ? (ans.like || 0) + 1
+                : Math.max(0, (ans.like || 1) - 1),
+            };
+          }
+          return ans;
+        }),
+      );
     }
   };
 
@@ -105,15 +183,28 @@ export default function Comment({
 
       <p className="text-sm">{comment.text}</p>
 
-      <div className="flex items-center w-full font-semibold text-sm">
-        <button className="flex justify-center items-center px-3 py-1 rounded-md hover:bg-gray-200 transition-colors duration-300 gap-2 cursor-pointer">
-          <Heart className="w-4" />
-          <span className="max-lg:text-sm max-lg:hidden">Apoiar</span>
+      {/* Ações do Comentário */}
+      <div className="flex items-center w-full font-semibold text-sm gap-1">
+        <button
+          onClick={handleCommentLike}
+          className={`flex justify-center items-center px-3 py-1 rounded-md transition-colors duration-300 gap-2 cursor-pointer ${
+            commentLiked
+              ? "text-secondary bg-secondary/10 hover:bg-secondary/20"
+              : "hover:bg-gray-200 text-gray-700"
+          }`}>
+          <Heart className={`w-4 ${commentLiked ? "fill-current" : ""}`} />
+          <span className="max-lg:text-sm max-lg:hidden">
+            {" "}
+            {commentLiked ? "Apoiou" : "Apoiar"}
+          </span>
+          {commentLikesCount > 0 && (
+            <span className="text-xs">({commentLikesCount})</span>
+          )}
         </button>
 
         <button
           onClick={() => setReplyMode(!replyMode)}
-          className="flex justify-center items-center px-3 py-1 rounded-md hover:bg-gray-200 transition-colors duration-300 gap-2 cursor-pointer">
+          className="flex justify-center items-center px-3 py-1 rounded-md hover:bg-gray-200 text-gray-700 transition-colors duration-300 gap-2 cursor-pointer">
           <MessageCircle className="w-4" />
           <span className="max-lg:text-sm max-lg:hidden">Responder</span>
         </button>
@@ -141,52 +232,74 @@ export default function Comment({
             className="w-full mt-2 flex flex-col gap-4">
             {answers
               .filter((a) => a && typeof a.text === "string")
-              .map((answer) => (
-                <motion.div
-                  key={answer.id || Math.random()}
-                  variants={item}
-                  layout
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.25 }}
-                  className="flex flex-col gap-1 ml-4 pl-3 border-l-2 border-gray-200">
-                  <div className="flex items-center gap-2 mt-1">
-                    {answer.profile_picture && (
-                      <Image
-                        src={answer.profile_picture}
-                        width={24}
-                        height={24}
-                        unoptimized
-                        alt="Answer Profile Picture"
-                        className="rounded-full bg-gray-300"
-                      />
-                    )}
-                    <span className="text-xs text-gray-600">
-                      {answer.anon_name || "Anônimo"} •{" "}
-                      <TimeAgo
-                        date={answer.created_at || new Date()}
-                        formatter={customFormatter}
-                      />
-                    </span>
-                  </div>
-                  <p className="text-sm">{answer.text}</p>
+              .map((answer) => {
+                const isAnswerLiked = answer.has_reacted || false;
+                const answerLikesCount = answer.like || 0;
 
-                  <div className="flex items-center w-full font-semibold max-lg:text-xs text-xs">
-                    <button className="flex justify-center items-center px-2 py-0 rounded-md hover:bg-gray-200 transition-colors duration-300 gap-1 cursor-pointer">
-                      <Heart className="w-3" />
-                      <span className="max-lg:hidden">Apoiar</span>
-                    </button>
+                return (
+                  <motion.div
+                    key={answer.id || Math.random()}
+                    variants={item}
+                    layout
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.25 }}
+                    className="flex flex-col gap-1 ml-4 pl-3 border-l-2 border-gray-200">
+                    <div className="flex items-center gap-2 mt-1">
+                      {answer.profile_picture && (
+                        <Image
+                          src={answer.profile_picture}
+                          width={24}
+                          height={24}
+                          unoptimized
+                          alt="Answer Profile Picture"
+                          className="rounded-full bg-gray-300"
+                        />
+                      )}
+                      <span className="text-xs text-gray-600">
+                        {answer.anon_name || "Anônimo"} •{" "}
+                        <TimeAgo
+                          date={answer.created_at || new Date()}
+                          formatter={customFormatter}
+                        />
+                      </span>
+                    </div>
+                    <p className="text-sm">{answer.text}</p>
 
-                    <button
-                      onClick={() => setReplyMode(!replyMode)}
-                      className="flex justify-center items-center px-2 py-0 rounded-md hover:bg-gray-200 transition-colors duration-300 gap-1 cursor-pointer">
-                      <MessageCircle className="w-3" />
-                      <span className="max-lg:hidden">Responder</span>
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
+                    <div className="flex items-center w-full font-semibold max-lg:text-xs text-xs gap-1">
+                      <button
+                        onClick={() =>
+                          handleAnswerLike(answer.id, isAnswerLiked)
+                        }
+                        className={`flex justify-center items-center px-2 py-0.5 rounded-md transition-colors duration-300 gap-1 cursor-pointer ${
+                          isAnswerLiked
+                            ? "text-secondary bg-secondary/10 hover:bg-secondary/20"
+                            : "hover:bg-gray-200 text-gray-600"
+                        }`}>
+                        <Heart
+                          className={`w-3 ${isAnswerLiked ? "fill-current" : ""}`}
+                        />
+                        <span className="max-lg:hidden">
+                          {isAnswerLiked ? "Apoiou" : "Apoiar"}
+                        </span>
+                        {answerLikesCount > 0 && (
+                          <span className="text-[10px]">
+                            ({answerLikesCount})
+                          </span>
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => setReplyMode(!replyMode)}
+                        className="flex justify-center items-center px-2 py-0.5 rounded-md hover:bg-gray-200 text-gray-600 transition-colors duration-300 gap-1 cursor-pointer">
+                        <MessageCircle className="w-3" />
+                        <span className="max-lg:hidden">Responder</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
           </motion.div>
         )}
       </AnimatePresence>

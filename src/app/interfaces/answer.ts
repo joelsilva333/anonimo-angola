@@ -6,5 +6,9 @@ export interface AnswerInterface {
   text: string;
   created_at: Date;
   updated_at: Date;
-  status: "active" | "flagged" | "deleted"
+  like: number;
+  dislike: number;
+  has_reacted: boolean | null;
+  reaction_type: "like" | "dislike" | null;
+  status: "active" | "flagged" | "deleted";
 }
