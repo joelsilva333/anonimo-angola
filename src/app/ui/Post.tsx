@@ -340,23 +340,20 @@ export default function Post({
           </svg>
         </motion.div>
 
-        {/* Título focado em CTA de Comunidade */}
-        <h3 className="text-2xl font-black text-gray-900 tracking-tight px-2">
+        <h3 className="text-2xl font-bold tracking-tight px-2">
           Junta-te à nossa roda de desabafos!
         </h3>
 
-        {/* Texto descritivo adaptado para apoiar, comentar ou postar */}
-        <p className="text-sm text-gray-500 leading-relaxed mt-2 px-1">
+        <p className=" text-gray-500 leading-relaxed mt-2 px-1">
           Para partilhares o teu próprio desabafo, apoiar ou comentar nas histórias da banda, precisas de fazer parte da comunidade <span className="font-semibold text-secondary">Anónimo Angola</span>.
         </p>
 
-        {/* Ações / Botões de Conversão */}
         <div className="flex flex-col gap-3 w-full mt-6">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => router.push("/login")}
-            className="w-full bg-secondary hover:bg-secondary/90 text-white font-bold py-3.5 rounded-2xl shadow-md shadow-secondary/20 transition-all text-sm tracking-wide"
+            className="btn-primary"
           >
             Entrar na minha conta
           </motion.button>
@@ -365,14 +362,14 @@ export default function Post({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => router.push("/register")}
-            className="w-full bg-gray-50 hover:bg-gray-100 text-gray-800 font-bold py-3.5 rounded-2xl transition-all text-sm border border-gray-200/60"
+            className="btn-secondary"
           >
             Criar conta anónima grátis
           </motion.button>
 
           <button
             onClick={() => setIsLoginModalOpen(false)}
-            className="text-xs text-gray-400 hover:text-gray-600 font-medium transition-colors cursor-pointer mt-3"
+            className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-all duration-300 hover:scale-105 cursor-pointer mt-3"
           >
             Continuar apenas a ler
           </button>

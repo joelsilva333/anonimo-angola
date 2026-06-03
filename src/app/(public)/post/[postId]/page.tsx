@@ -20,8 +20,8 @@ export default function PostDetailPage({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-zinc-400 text-sm animate-pulse">
+        <div className="w-8 h-8 border-4 border-secondary border-t-transparent rounded-full animate-spin"></div>
+        <p className="animate-pulse">
           A carregar o desabafo...
         </p>
       </div>
@@ -31,19 +31,19 @@ export default function PostDetailPage({
   if (error || !post) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <div className="bg-zinc-900/50 p-4 rounded-full text-zinc-600 mb-4">
+        <div className="bg-secondary/80 p-4 rounded-full text-white mb-4">
           <MessageCircle size={40} />
         </div>
-        <h3 className="text-xl font-semibold text-zinc-200">
+        <h3 className="text-2xl font-semibold">
           Desabafo não encontrado
         </h3>
-        <p className="text-zinc-400 text-sm mt-2 max-w-sm">
+        <p className="mt-2 max-w-sm">
           O link pode estar partido ou o desabafo foi apagado pelo autor.
         </p>
         <button
           onClick={() => router.push("/")}
-          className="mt-6 flex items-center gap-2 text-sm font-medium text-emerald-500 hover:text-emerald-400 transition-colors">
-          <ArrowLeft size={16} /> Voltar para a Home
+          className="mt-6 flex items-center gap-2 cursor-pointer hover:scale-105 font-medium text-secondary/90 hover:text-secondary transition-all duration-300">
+          <ArrowLeft size={16} /> Voltar para as postagens
         </button>
       </div>
     );
@@ -57,8 +57,8 @@ export default function PostDetailPage({
       transition={{ duration: 0.3, ease: "easeOut" }}
       className="w-full max-w-2xl mx-auto px-4 py-6">
       <button
-        onClick={() => router.back()}
-        className="group flex items-center gap-2 text-zinc-400 hover:text-zinc-200 text-sm font-medium mb-6 transition-colors duration-200">
+        onClick={() => router.push("/")}
+        className="group flex items-center gap-2 hover:text-primary/80 font-medium mb-6 transition-colors duration-200 cursor-pointer">
         <ArrowLeft
           size={18}
           className="transform group-hover:-translate-x-1 transition-transform"
