@@ -2,14 +2,15 @@
 
 import { X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { api } from "../api/config";
 import { useUser } from "../hooks/user";
 import { toast, ToastContainer } from "react-toastify";
-import Post from "../ui/Post";
 import { useGetPosts } from "../hooks/post";
 import { motion, AnimatePresence } from "framer-motion";
+import Post from "../ui/Post";
 
 interface FormData {
   text: string;
@@ -89,7 +90,7 @@ export default function Home() {
         </p>
       </motion.div>
 
-      <motion.div
+      {/*   <motion.div
         whileHover={{ scale: 1.01 }}
         transition={{ type: "spring", stiffness: 200 }}
         className="w-full bg-white p-6 rounded-3xl flex flex-col gap-4 hover:shadow-lg transition-shadow duration-300">
@@ -112,7 +113,7 @@ export default function Home() {
           className="text-xl max-lg:text-lg text-gray-500 w-fit cursor-text text-left">
           Esteja à vontade para desabafar aqui...
         </button>
-      </motion.div>
+      </motion.div> */}
 
       <h1 className="text-lg font-bold text-left w-full">ÚLTIMOS DESABAFOS</h1>
 
@@ -140,7 +141,6 @@ export default function Home() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed h-screen w-full top-0 flex justify-center items-center bg-white/80 p-4 z-50">
-            <ToastContainer />
             <motion.form
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}

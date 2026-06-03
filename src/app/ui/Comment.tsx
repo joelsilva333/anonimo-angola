@@ -37,6 +37,8 @@ export default function Comment({
   );
   const [commentLikesCount, setCommentLikesCount] = useState(comment.like || 0);
 
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
   const { register, reset, handleSubmit } = useForm<ReplyInput>();
 
   const onSubmit: SubmitHandler<ReplyInput> = async (data) => {
@@ -73,7 +75,20 @@ export default function Comment({
     }
   };
 
+  const isAuthenticated = (): boolean => {
+    if (typeof window !== "undefined") {
+      return !!localStorage.getItem("user_data");
+    }
+    return false;
+  };
+
   const handleCommentLike = async () => {
+    if (!isAuthenticated()) {
+      setIsLoginModalOpen(true);
+
+      return;
+    }
+
     const previousLiked = commentLiked;
     const previousCount = commentLikesCount;
 
@@ -183,31 +198,34 @@ export default function Comment({
 
       <p className="text-sm">{comment.text}</p>
 
-      {/* Ações do Comentário */}
       <div className="flex items-center w-full font-semibold text-sm gap-1">
-        <button
-          onClick={handleCommentLike}
-          className={`flex justify-center items-center px-3 py-1 rounded-md transition-colors duration-300 gap-2 cursor-pointer ${
-            commentLiked
-              ? "text-secondary bg-secondary/10 hover:bg-secondary/20"
-              : "hover:bg-gray-200 text-gray-700"
-          }`}>
-          <Heart className={`w-4 ${commentLiked ? "fill-current" : ""}`} />
-          <span className="max-lg:text-sm max-lg:hidden">
+        {isAuthenticated() && (
+          <>
             {" "}
-            {commentLiked ? "Apoiou" : "Apoiar"}
-          </span>
-          {commentLikesCount > 0 && (
-            <span className="text-xs">({commentLikesCount})</span>
-          )}
-        </button>
-
-        <button
-          onClick={() => setReplyMode(!replyMode)}
-          className="flex justify-center items-center px-3 py-1 rounded-md hover:bg-gray-200 text-gray-700 transition-colors duration-300 gap-2 cursor-pointer">
-          <MessageCircle className="w-4" />
-          <span className="max-lg:text-sm max-lg:hidden">Responder</span>
-        </button>
+            <button
+              onClick={handleCommentLike}
+              className={`flex justify-center items-center px-3 py-1 rounded-md transition-colors duration-300 gap-2 cursor-pointer ${
+                commentLiked
+                  ? "text-secondary bg-secondary/10 hover:bg-secondary/20"
+                  : "hover:bg-gray-200 text-gray-700"
+              }`}>
+              <Heart className={`w-4 ${commentLiked ? "fill-current" : ""}`} />
+              <span className="max-lg:text-sm max-lg:hidden">
+                {" "}
+                {commentLiked ? "Apoiou" : "Apoiar"}
+              </span>
+              {commentLikesCount > 0 && (
+                <span className="text-xs">({commentLikesCount})</span>
+              )}
+            </button>
+            <button
+              onClick={() => setReplyMode(!replyMode)}
+              className="flex justify-center items-center px-3 py-1 rounded-md hover:bg-gray-200 text-gray-700 transition-colors duration-300 gap-2 cursor-pointer">
+              <MessageCircle className="w-4" />
+              <span className="max-lg:text-sm max-lg:hidden">Responder</span>
+            </button>
+          </>
+        )}
       </div>
 
       {Array.isArray(answers) && answers.length > 0 && (
@@ -268,34 +286,38 @@ export default function Comment({
                     <p className="text-sm">{answer.text}</p>
 
                     <div className="flex items-center w-full font-semibold max-lg:text-xs text-xs gap-1">
-                      <button
-                        onClick={() =>
-                          handleAnswerLike(answer.id, isAnswerLiked)
-                        }
-                        className={`flex justify-center items-center px-2 py-0.5 rounded-md transition-colors duration-300 gap-1 cursor-pointer ${
-                          isAnswerLiked
-                            ? "text-secondary bg-secondary/10 hover:bg-secondary/20"
-                            : "hover:bg-gray-200 text-gray-600"
-                        }`}>
-                        <Heart
-                          className={`w-3 ${isAnswerLiked ? "fill-current" : ""}`}
-                        />
-                        <span className="max-lg:hidden">
-                          {isAnswerLiked ? "Apoiou" : "Apoiar"}
-                        </span>
-                        {answerLikesCount > 0 && (
-                          <span className="text-[10px]">
-                            ({answerLikesCount})
-                          </span>
-                        )}
-                      </button>
+                      {isAuthenticated() && (
+                        <>
+                          <button
+                            onClick={() =>
+                              handleAnswerLike(answer.id, isAnswerLiked)
+                            }
+                            className={`flex justify-center items-center px-2 py-0.5 rounded-md transition-colors duration-300 gap-1 cursor-pointer ${
+                              isAnswerLiked
+                                ? "text-secondary bg-secondary/10 hover:bg-secondary/20"
+                                : "hover:bg-gray-200 text-gray-600"
+                            }`}>
+                            <Heart
+                              className={`w-3 ${isAnswerLiked ? "fill-current" : ""}`}
+                            />
+                            <span className="max-lg:hidden">
+                              {isAnswerLiked ? "Apoiou" : "Apoiar"}
+                            </span>
+                            {answerLikesCount > 0 && (
+                              <span className="text-[10px]">
+                                ({answerLikesCount})
+                              </span>
+                            )}
+                          </button>
 
-                      <button
-                        onClick={() => setReplyMode(!replyMode)}
-                        className="flex justify-center items-center px-2 py-0.5 rounded-md hover:bg-gray-200 text-gray-600 transition-colors duration-300 gap-1 cursor-pointer">
-                        <MessageCircle className="w-3" />
-                        <span className="max-lg:hidden">Responder</span>
-                      </button>
+                          <button
+                            onClick={() => setReplyMode(!replyMode)}
+                            className="flex justify-center items-center px-2 py-0.5 rounded-md hover:bg-gray-200 text-gray-600 transition-colors duration-300 gap-1 cursor-pointer">
+                            <MessageCircle className="w-3" />
+                            <span className="max-lg:hidden">Responder</span>
+                          </button>
+                        </>
+                      )}
                     </div>
                   </motion.div>
                 );

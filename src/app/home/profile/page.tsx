@@ -2,7 +2,7 @@
 
 import { useGetUserPosts } from "@/app/hooks/post";
 import Image from "next/image";
-import Post from "../ui/Post";
+import Post from "../../ui/Post";
 import { useUser } from "@/app/hooks/user";
 
 export default function ProfilePage() {
