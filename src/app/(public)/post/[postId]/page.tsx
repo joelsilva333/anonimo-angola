@@ -1,77 +1,67 @@
-"use client";
+// app/posts/[postId]/page.tsx
+import { Metadata } from "next";
+import { PostInterface } from "@/app/interfaces/post"; 
+import PostDetailPageClient from "./components/PostDetailPage";
 
-import { useRouter } from "next/navigation";
-import { ArrowLeft, MessageCircle } from "lucide-react";
-import { motion } from "framer-motion";
-import useGetPostById from "@/app/hooks/get-post-by-id";
-import Post from "@/app/ui/Post";
-import { use } from "react";
-
-export default function PostDetailPage({
-  params,
-}: {
+interface Props {
   params: Promise<{ postId: string }>;
-}) {
-  const router = useRouter();
-  const { postId } = use(params);
+}
 
-  const { post, error, loading, refetch } = useGetPostById(postId);
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { postId } = await params;
+  
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://anonimo-angola.vercel.app";
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <div className="w-8 h-8 border-4 border-secondary border-t-transparent rounded-full animate-spin"></div>
-        <p className="animate-pulse">
-          A carregar o desabafo...
-        </p>
-      </div>
-    );
+  try {
+    const response = await fetch(`${apiUrl}/posts/${postId}`, {
+      next: { revalidate: 30 }, // Mantém o cache por 30 segundos
+    });
+
+    if (!response.ok) throw new Error();
+    
+    const post: PostInterface = await response.json();
+
+    const autor = post.anon_name || post.user?.anon_name || "Alguém";
+    const title = `${autor} desabafou...`;
+    
+    const description = post.text.length > 150 
+      ? `${post.text.substring(0, 150)}...` 
+      : post.text;
+
+    return {
+      title: title,
+      description: description,
+      openGraph: {
+        type: "article",
+        url: `${baseUrl}/posts/${postId}`,
+        title: `${title} | Anônimo Angola`,
+        description: description,
+        images: [
+          {
+            url: `${baseUrl}/logos/bg-white.png`, 
+            width: 1200,
+            height: 630,
+            alt: `Desabafo de ${autor}`,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${title} | Anônimo Angola`,
+        description: description,
+        images: [`${baseUrl}/logos/bg-white.png`],
+      },
+    };
+  } catch (error) {
+
+    return {
+      title: "Desabafo Anónimo | Anônimo Angola",
+      description: "Lê e partilha desabafos de forma totalmente anónima.",
+    };
   }
+}
 
-  if (error || !post) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <div className="bg-secondary/80 p-4 rounded-full text-white mb-4">
-          <MessageCircle size={40} />
-        </div>
-        <h3 className="text-2xl font-semibold">
-          Desabafo não encontrado
-        </h3>
-        <p className="mt-2 max-w-sm">
-          O link pode estar partido ou o desabafo foi apagado pelo autor.
-        </p>
-        <button
-          onClick={() => router.push("/")}
-          className="mt-6 flex items-center gap-2 cursor-pointer hover:scale-105 font-medium text-secondary/90 hover:text-secondary transition-all duration-300">
-          <ArrowLeft size={16} /> Voltar para as postagens
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-      className="w-full max-w-2xl mx-auto px-4 py-6">
-      <button
-        onClick={() => router.push("/")}
-        className="group flex items-center gap-2 hover:text-primary/80 font-medium mb-6 transition-colors duration-200 cursor-pointer">
-        <ArrowLeft
-          size={18}
-          className="transform group-hover:-translate-x-1 transition-transform"
-        />
-        <span>Voltar</span>
-      </button>
-
-      <main>
-        <Post
-          post={post}
-          refetch={refetch}
-        />
-      </main>
-    </motion.div>
-  );
+export default async function Page({ params }: Props) {
+  return <PostDetailPageClient params={params} />;
 }

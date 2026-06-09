@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/app/api/config";
 import { AnimatePresence, motion } from "framer-motion";
+import { ShareResponse } from "../interfaces/share";
 
 interface CommentInput {
   text: string;
@@ -35,6 +36,11 @@ export default function Post({
 
   const [liked, setLiked] = useState(post.has_reacted || false);
   const [likesCount, setLikesCount] = useState(post.like || 0);
+
+  const [shareLinks, setShareLinks] = useState<
+    ShareResponse["shareLinks"] | null
+  >(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const [sharesCount, setSharesCount] = useState(
     Math.floor(Math.random() * 10),
@@ -114,10 +120,32 @@ export default function Post({
     }
   };
 
-  const handleShare = () => {
-    setSharesCount((prev) => prev + 1);
-    navigator.clipboard.writeText(window.location.href);
-    toast.info("Link da publicação copiado para a área de transferência!");
+  const handleShare = async () => {
+    try {
+
+      // Chamada à API igual ao teu Postman
+      const response = await api.post("/shares/", {
+        postId: post.id,
+        platform: "link",
+      });
+
+      if (response.status === 201) {
+        const data: ShareResponse = response.data;
+        setShareLinks(data.shareLinks);
+        setIsShareModalOpen(true);
+
+        // Incrementa o contador visual localmente (opcional)
+        setSharesCount((prev) => prev + 1);
+
+        // Copia o link principal por padrão para facilitar
+        navigator.clipboard.writeText(data.shareLinks.rawLink);
+      }
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message ||
+          "Erro ao gerar links de partilha. Tente novamente.",
+      );
+    }
   };
 
   return (
@@ -311,73 +339,135 @@ export default function Post({
       </motion.div>
 
       <AnimatePresence>
-  {isLoginModalOpen && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        transition={{ type: "spring", duration: 0.5 }}
-        className="bg-white p-8 rounded-[2.5rem] shadow-2xl max-w-sm w-full mx-4 flex flex-col text-center items-center border border-gray-100"
-      >
-        {/* Ícone de Destaque / Identidade Visual */}
-        <motion.div 
-          initial={{ rotate: -10, scale: 0.8 }}
-          animate={{ rotate: 0, scale: 1 }}
-          transition={{ delay: 0.1, type: "spring" }}
-          className="bg-secondary/10 text-secondary p-4 rounded-3xl mb-2 flex items-center justify-center"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-8 h-8"
-          >
-            {/* Um ícone personalizado combinando mensagens ocultas/cadeado */}
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-          </svg>
-        </motion.div>
+        {isLoginModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="bg-white p-8 rounded-[2.5rem] shadow-2xl max-w-sm w-full mx-4 flex flex-col text-center items-center border border-gray-100">
+              {/* Ícone de Destaque / Identidade Visual */}
+              <motion.div
+                initial={{ rotate: -10, scale: 0.8 }}
+                animate={{ rotate: 0, scale: 1 }}
+                transition={{ delay: 0.1, type: "spring" }}
+                className="bg-secondary/10 text-secondary p-4 rounded-3xl mb-2 flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="w-8 h-8">
+                  {/* Um ícone personalizado combinando mensagens ocultas/cadeado */}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+                  />
+                </svg>
+              </motion.div>
 
-        <h3 className="text-2xl font-bold tracking-tight px-2">
-          Junta-te à nossa roda de desabafos!
-        </h3>
+              <h3 className="text-2xl font-bold tracking-tight px-2">
+                Junta-te à nossa roda de desabafos!
+              </h3>
 
-        <p className=" text-gray-500 leading-relaxed mt-2 px-1">
-          Para partilhares o teu próprio desabafo, apoiar ou comentar nas histórias da banda, precisas de fazer parte da comunidade <span className="font-semibold text-secondary">Anónimo Angola</span>.
-        </p>
+              <p className=" text-gray-500 leading-relaxed mt-2 px-1">
+                Para partilhares o teu próprio desabafo, apoiar ou comentar nas
+                histórias da banda, precisas de fazer parte da comunidade{" "}
+                <span className="font-semibold text-secondary">
+                  Anónimo Angola
+                </span>
+                .
+              </p>
 
-        <div className="flex flex-col gap-3 w-full mt-6">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => router.push("/login")}
-            className="btn-primary"
-          >
-            Entrar na minha conta
-          </motion.button>
+              <div className="flex flex-col gap-3 w-full mt-6">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => router.push("/login")}
+                  className="btn-primary">
+                  Entrar na minha conta
+                </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => router.push("/register")}
-            className="btn-secondary"
-          >
-            Criar conta anónima grátis
-          </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => router.push("/register")}
+                  className="btn-secondary">
+                  Criar conta anónima grátis
+                </motion.button>
 
-          <button
-            onClick={() => setIsLoginModalOpen(false)}
-            className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-all duration-300 hover:scale-105 cursor-pointer mt-3"
-          >
-            Continuar apenas a ler
-          </button>
-        </div>
-      </motion.div>
-    </div>
-  )}
-</AnimatePresence>
+                <button
+                  onClick={() => setIsLoginModalOpen(false)}
+                  className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-all duration-300 hover:scale-105 cursor-pointer mt-3">
+                  Continuar apenas a ler
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Partilha */}
+      <AnimatePresence>
+        {isShareModalOpen && shareLinks && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white p-8 rounded-[2.5rem] shadow-2xl max-w-sm w-full mx-4 flex flex-col text-center items-center border border-gray-100">
+              <h3 className="text-xl font-bold tracking-tight mb-2">
+                Partilhar este desabafo
+              </h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Ajuda a espalhar a palavra de forma anónima nas tuas redes.
+              </p>
+
+              {/* Links das Redes Sociais */}
+              <div className="grid grid-cols-2 gap-3 w-full">
+                <a
+                  href={shareLinks.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center p-3 bg-green-500 text-white rounded-2xl hover:bg-green-600 transition-all font-medium text-sm">
+                  WhatsApp
+                </a>
+                <a
+                  href={shareLinks.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center p-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-all font-medium text-sm">
+                  Facebook
+                </a>
+                <a
+                  href={shareLinks.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center p-3 bg-blue-700 text-white rounded-2xl hover:bg-blue-800 transition-all font-medium text-sm">
+                  LinkedIn
+                </a>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(shareLinks.rawLink);
+                    toast.success("Link copiado para a área de transferência!");
+                  }}
+                  className="flex items-center justify-center p-3 bg-gray-100 text-gray-800 rounded-2xl hover:bg-gray-200 transition-all font-medium text-sm">
+                  Copiar Link
+                </button>
+              </div>
+
+              <button
+                onClick={() => setIsShareModalOpen(false)}
+                className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-all duration-300 mt-6 cursor-pointer">
+                Fechar
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

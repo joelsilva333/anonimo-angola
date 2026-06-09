@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
+import Header from "../ui/Header";
+import Footer from "../ui/Footer";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://anonimo-angola.vercel.app/"),
@@ -64,6 +64,8 @@ export default function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  
+
   return (
     <div>
       <Header />
