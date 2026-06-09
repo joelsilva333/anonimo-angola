@@ -4,7 +4,7 @@ import { Bell, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import Menu from "../home/components/Menu";
+import Menu from "./Menu";
 import { useUser } from "@/app/hooks/user";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -34,7 +34,7 @@ export default function Header() {
   return (
     <header className="bg-background-secondary w-full px-16 py-2 max-lg:px-8 flex items-center justify-between sticky top-0 z-50">
       <div className="flex items-center gap-8 max-w-lg w-full">
-        <Link href="/">
+        <Link href={isAuthenticated() ? "/home" : "/"}>
           <Image
             src={"/logos/bg-none.png"}
             width={100}

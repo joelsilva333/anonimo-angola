@@ -5,15 +5,9 @@ import { ArrowLeft, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import useGetPostById from "@/app/hooks/get-post-by-id";
 import Post from "@/app/ui/Post";
-import { use } from "react";
 
-export default function PostDetailPageClient({
-  params,
-}: {
-  params: Promise<{ postId: string }>;
-}) {
+export default function PostDetailPageClient({ postId }: { postId: string }) {
   const router = useRouter();
-  const { postId } = use(params);
 
   const { post, error, loading, refetch } = useGetPostById(postId);
 

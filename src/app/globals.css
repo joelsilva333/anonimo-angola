@@ -10,16 +10,17 @@
 }
 
 .btn-primary {
-    @apply bg-secondary text-white font-semibold flex justify-center items-center 
+    @apply bg-secondary text-white font-semibold flex border-2 border-secondary 
+          justify-center items-center 
            rounded-2xl transition-all duration-300 ease-out cursor-pointer 
            w-full px-6 py-2 shadow-sm
-           hover:bg-secondary-hover hover:scale-110;
+           hover:bg-secondary-hover hover:scale-105;
 }
 
 .btn-secondary {
-    @apply hover:bg-transparent border-2 hover:border-primary hover:text-primary font-medium
+    @apply hover:bg-transparent border-2 border-primary hover:text-primary font-medium
            flex justify-center items-center rounded-2xl transition-all 
            duration-300 ease-out cursor-pointer w-full px-6 py-2
-           bg-primary text-white hover:scale-[1.02] 
+           bg-primary text-white hover:scale-105
            active:scale-[0.98];
 }

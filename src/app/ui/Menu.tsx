@@ -32,7 +32,7 @@ export default function Menu({
     localStorage.removeItem("user_data");
 
     cookies.remove("aa_token", { path: "/" });
-    router.push("/login");
+    router.push("/");
   };
 
   const handleMenuClick = (link: string) => {

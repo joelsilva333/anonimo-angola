@@ -14,6 +14,8 @@ import { useRouter } from "next/navigation";
 import { api } from "@/app/api/config";
 import { AnimatePresence, motion } from "framer-motion";
 import { ShareResponse } from "../interfaces/share";
+import Link from "next/link";
+import { FaTimes, FaWhatsapp, FaFacebookF, FaLinkedinIn, FaRegCopy } from "react-icons/fa";
 
 interface CommentInput {
   text: string;
@@ -41,10 +43,6 @@ export default function Post({
     ShareResponse["shareLinks"] | null
   >(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-
-  const [sharesCount, setSharesCount] = useState(
-    Math.floor(Math.random() * 10),
-  );
 
   useEffect(() => {
     setLiked(post.has_reacted || false);
@@ -122,7 +120,6 @@ export default function Post({
 
   const handleShare = async () => {
     try {
-
       // Chamada à API igual ao teu Postman
       const response = await api.post("/shares/", {
         postId: post.id,
@@ -133,9 +130,6 @@ export default function Post({
         const data: ShareResponse = response.data;
         setShareLinks(data.shareLinks);
         setIsShareModalOpen(true);
-
-        // Incrementa o contador visual localmente (opcional)
-        setSharesCount((prev) => prev + 1);
 
         // Copia o link principal por padrão para facilitar
         navigator.clipboard.writeText(data.shareLinks.rawLink);
@@ -270,9 +264,6 @@ export default function Post({
                 className="flex hover:bg-gray-100 w-full justify-center items-center p-2 rounded-md transition-colors duration-300 gap-2 cursor-pointer">
                 <Forward className="w-5" />
                 <span className="max-lg:text-sm max-lg:hidden">Partilhar</span>
-                <span className="text-xs text-gray-500 ml-1">
-                  {sharesCount > 0 && sharesCount}
-                </span>
               </motion.button>
             </li>
           </ul>
@@ -410,59 +401,82 @@ export default function Post({
         )}
       </AnimatePresence>
 
-      {/* Modal de Partilha */}
       <AnimatePresence>
         {isShareModalOpen && shareLinks && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white p-8 rounded-[2.5rem] shadow-2xl max-w-sm w-full mx-4 flex flex-col text-center items-center border border-gray-100">
-              <h3 className="text-xl font-bold tracking-tight mb-2">
-                Partilhar este desabafo
-              </h3>
-              <p className="text-sm text-gray-500 mb-6">
-                Ajuda a espalhar a palavra de forma anónima nas tuas redes.
-              </p>
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="relative bg-white p-6 sm:p-8 rounded-[2rem] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] max-w-sm w-full flex flex-col text-center items-center border border-gray-100">
+              {/* Botão Fechar Superior */}
+              <button
+                onClick={() => setIsShareModalOpen(false)}
+                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
+                aria-label="Fechar">
+                <FaTimes className="text-lg" />
+              </button>
 
-              {/* Links das Redes Sociais */}
+              {/* Cabeçalho */}
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-1.5">
+                  Partilhar este desabafo
+                </h3>
+                <p className="text-sm text-gray-500 max-w-[250px] mx-auto leading-relaxed">
+                  Ajuda a espalhar a palavra de forma anónima nas tuas redes.
+                </p>
+              </div>
+
+              {/* Grelha de Botões */}
               <div className="grid grid-cols-2 gap-3 w-full">
-                <a
+                {/* WhatsApp */}
+                <Link
                   href={shareLinks.whatsapp}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center p-3 bg-green-500 text-white rounded-2xl hover:bg-green-600 transition-all font-medium text-sm">
-                  WhatsApp
-                </a>
-                <a
+                  className="flex flex-col sm:flex-row items-center justify-center gap-2 p-3.5 bg-green-50 text-green-700 rounded-2xl hover:bg-green-600 hover:text-white transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-green-100 active:scale-[0.98]">
+                  <FaWhatsapp className="text-lg" />
+                  <span>WhatsApp</span>
+                </Link>
+
+                {/* Facebook */}
+                <Link
                   href={shareLinks.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center p-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-all font-medium text-sm">
-                  Facebook
-                </a>
-                <a
+                  className="flex flex-col sm:flex-row items-center justify-center gap-2 p-3.5 bg-blue-50 text-blue-700 rounded-2xl hover:bg-blue-600 hover:text-white transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-blue-100 active:scale-[0.98]">
+                  <FaFacebookF className="text-base" />
+                  <span>Facebook</span>
+                </Link>
+
+                {/* LinkedIn */}
+                <Link
                   href={shareLinks.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center p-3 bg-blue-700 text-white rounded-2xl hover:bg-blue-800 transition-all font-medium text-sm">
-                  LinkedIn
-                </a>
+                  className="flex flex-col sm:flex-row items-center justify-center gap-2 p-3.5 bg-sky-50 text-sky-700 rounded-2xl hover:bg-sky-700 hover:text-white transition-all duration-200 font-semibold text-sm shadow-sm hover:shadow-sky-100 active:scale-[0.98]">
+                  <FaLinkedinIn className="text-base" />
+                  <span>LinkedIn</span>
+                </Link>
+
+                {/* Copiar Link */}
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(shareLinks.rawLink);
                     toast.success("Link copiado para a área de transferência!");
                   }}
-                  className="flex items-center justify-center p-3 bg-gray-100 text-gray-800 rounded-2xl hover:bg-gray-200 transition-all font-medium text-sm">
-                  Copiar Link
+                  className="flex flex-col sm:flex-row items-center justify-center gap-2 p-3.5 bg-gray-50 text-gray-700 rounded-2xl hover:bg-gray-900 hover:text-white transition-all duration-200 font-semibold text-sm shadow-sm active:scale-[0.98]">
+                  <FaRegCopy className="text-base" />
+                  <span>Copiar Link</span>
                 </button>
               </div>
 
+              {/* Botão Cancelar Inferior */}
               <button
                 onClick={() => setIsShareModalOpen(false)}
-                className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-all duration-300 mt-6 cursor-pointer">
-                Fechar
+                className="w-full py-3 mt-4 text-sm font-semibold text-gray-500 hover:text-gray-800 hover:bg-gray-50 rounded-xl transition-all duration-200">
+                Cancelar
               </button>
             </motion.div>
           </div>
