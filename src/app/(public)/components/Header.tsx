@@ -16,19 +16,20 @@ export default function Header() {
       </Link>
 
       <nav>
-        <ul className="flex gap-2">
+        <ul className="flex gap-2 items-center">
           <li>
             <Link
               href="/login"
               className="btn-primary">
-              Login
+              Entrar na minha conta
             </Link>
           </li>
+
           <li>
             <Link
               href="/register"
               className="btn-secondary">
-              Register
+              Criar perfil anônimo gratuito
             </Link>
           </li>
         </ul>
