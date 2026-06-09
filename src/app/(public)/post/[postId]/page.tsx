@@ -19,7 +19,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       next: { revalidate: 30 },
     });
 
-    if (!response.ok) throw new Error();
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Metadata fetch failed:", response.status, errorText);
+      throw new Error("Failed to fetch post metadata");
+    }
 
     const post: PostInterface = await response.json();
 
@@ -76,6 +80,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch (error) {
+    console.error("Erro ao buscar o desabafo:", error);
+
     return {
       title: "Desabafo Não Encontrado",
       description:
