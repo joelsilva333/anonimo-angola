@@ -10,6 +10,7 @@ import { toast, ToastContainer } from "react-toastify";
 import Post from "../ui/Post";
 import { useGetPosts } from "../hooks/post";
 import { motion, AnimatePresence } from "framer-motion";
+import { getProfilePictureUrl } from "../utils/getProfilePicture";
 
 interface FormData {
   text: string;
@@ -96,7 +97,7 @@ export default function Home() {
         <div className="flex items-center gap-4">
           {user?.profile_picture && (
             <Image
-              src={user.profile_picture}
+              src={getProfilePictureUrl(user.profile_picture)}
               width={44}
               height={44}
               unoptimized
@@ -152,7 +153,7 @@ export default function Home() {
                 <span className="flex items-center gap-4">
                   {user?.profile_picture && (
                     <Image
-                      src={user.profile_picture}
+                      src={getProfilePictureUrl(user.profile_picture)}
                       width={44}
                       height={44}
                       unoptimized

@@ -16,6 +16,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ShareResponse } from "../interfaces/share";
 import Link from "next/link";
 import { FaTimes, FaWhatsapp, FaFacebookF, FaLinkedinIn, FaRegCopy } from "react-icons/fa";
+import { getProfilePictureUrl } from "../utils/getProfilePicture";
 
 interface CommentInput {
   text: string;
@@ -152,7 +153,7 @@ export default function Post({
           <div className="flex items-center gap-4 max-lg:gap-3">
             {post.profile_picture && (
               <Image
-                src={post.profile_picture}
+                src={getProfilePictureUrl(post.profile_picture)}
                 width={50}
                 height={50}
                 unoptimized
@@ -163,7 +164,7 @@ export default function Post({
 
             {post.user?.profile_picture && (
               <Image
-                src={post.user.profile_picture}
+                src={getProfilePictureUrl(post.user.profile_picture)}
                 width={50}
                 height={50}
                 unoptimized
