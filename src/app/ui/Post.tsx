@@ -121,7 +121,6 @@ export default function Post({
 
   const handleShare = async () => {
     try {
-      // Chamada à API igual ao teu Postman
       const response = await api.post("/shares/", {
         postId: post.id,
         platform: "link",
@@ -132,7 +131,6 @@ export default function Post({
         setShareLinks(data.shareLinks);
         setIsShareModalOpen(true);
 
-        // Copia o link principal por padrão para facilitar
         navigator.clipboard.writeText(data.shareLinks.rawLink);
       }
     } catch (error: any) {
