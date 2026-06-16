@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-// 1. Tipamos o params como uma Promise para seguir o padrão atual do Next.js
 interface ProxyContext {
   params: Promise<{ path?: string[] }>;
 }
@@ -13,9 +12,8 @@ async function handleProxy(request: Request, context: ProxyContext) {
       { error: "URL do backend não configurada." },
       { status: 500 },
     );
-  }
+  } 
 
-  // 2. CORREÇÃO AQUI: Aguardamos o 'params' ser resolvido antes de usar suas propriedades
   const resolvedParams = await context.params;
   const pathSegment = resolvedParams.path ? resolvedParams.path.join("/") : "";
 
@@ -38,11 +36,9 @@ async function handleProxy(request: Request, context: ProxyContext) {
 
     let dataText = await backendResponse.text();
 
-    // Se a resposta for um JSON bem-sucedido, limpamos o domínio vazado
     if (
       backendResponse.headers.get("Content-Type")?.includes("application/json")
     ) {
-      // Substitui todas as ocorrências da URL real por uma string vazia ou relativa
       dataText = dataText.replaceAll(backendUrl, "");
     }
 
