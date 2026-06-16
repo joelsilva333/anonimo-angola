@@ -7,6 +7,7 @@ import { useState } from "react";
 import Menu from "./Menu";
 import { useUser } from "@/app/hooks/user";
 import { motion, AnimatePresence } from "framer-motion";
+import { getProfilePictureUrl } from "../utils/getProfilePicture";
 
 export default function Header() {
   const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
@@ -72,7 +73,7 @@ export default function Header() {
             className="cursor-pointer">
             {user?.profile_picture && (
               <Image
-                src={user.profile_picture}
+                src={getProfilePictureUrl(user.profile_picture)}
                 width={385}
                 height={385}
                 unoptimized
