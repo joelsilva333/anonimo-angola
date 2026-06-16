@@ -15,7 +15,7 @@ export default function MenuOption({
   return (
     <Link
       href={link}
-      className="w-full bg-white p-6 rounded-3xl flex items-center justify-between gap-2 hover:shadow-lg transition-shadow duration-300 min-h-25">
+      className="w-full flex items-center justify-between gap-2 min-h-25 card">
       <div className="flex flex-col gap-2 max-w-md">
         <h1 className="text-xl font-semibold">{title}</h1>
 
