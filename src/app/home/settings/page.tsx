@@ -4,25 +4,25 @@ export default function SettingsPage() {
   const menuOptions = [
     {
       label: "Conta e Perfil",
-      href: "#",
+      href: "/home/settings/profile",
       description:
         "Nome de utilizador, telefone (para recuperação de conta, não visível para outros), alterar palavra-passe, eliminar conta.",
     },
     {
       label: "Privacidade e Segurança",
-      href: "#",
+      href: "/home/settings/privacy",
       description:
         "Modo anônimo permanente, controle de comentários, bloquear utilizadores, quem pode enviar mensagens privadas.",
     },
     {
       label: "Notificações",
-      href: "#",
+      href: "/home/settings/notifications",
       description:
         "Notificações de novos comentários, notificações de reações, alertas de menções, novas mensagens privadas",
     },
     {
       label: "Conteúdo e Moderação",
-      href: "#",
+      href: "/home/settings/content",
       description:
         "Filtro de linguagem ofensiva, filtro de tópicos sensíveis, apagar publicações automaticamente.",
     },

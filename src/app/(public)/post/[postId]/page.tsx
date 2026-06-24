@@ -10,7 +10,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { postId } = await params;
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl = process.env.API_SECRET_URL || "http://localhost:8000/api";
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "https://anonimo-angola.vercel.app";
 

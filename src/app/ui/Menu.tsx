@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
 import Cookies from "universal-cookie";
+import { getProfilePictureUrl } from "../utils/getProfilePicture";
 
 interface MenuInterface {
   title: string;
@@ -56,7 +57,7 @@ export default function Menu({
           <span className="flex items-center gap-2">
             {user?.profile_picture && (
               <Image
-                src={user.profile_picture}
+                src={getProfilePictureUrl(user.profile_picture)}
                 width={36}
                 height={36}
                 unoptimized

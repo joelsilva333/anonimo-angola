@@ -4,6 +4,7 @@ import { useGetUserPosts } from "@/app/hooks/post";
 import Image from "next/image";
 import Post from "../../ui/Post";
 import { useUser } from "@/app/hooks/user";
+import { getProfilePictureUrl } from "@/app/utils/getProfilePicture";
 
 export default function ProfilePage() {
   const { userPosts: posts, refetch } = useGetUserPosts();
@@ -14,7 +15,7 @@ export default function ProfilePage() {
       <div className="w-full flex items-center gap-8 bg-gradient-to-r from-[#4B6D94] to-[#10192B] p-8 max-lg:gap-4 max-lg:p-4 max-lg:min-h-44">
         {user?.profile_picture && (
           <Image
-            src={user.profile_picture}
+            src={getProfilePictureUrl(user.profile_picture)}
             width={150}
             unoptimized
             height={150}
