@@ -8,12 +8,20 @@ import Menu from "./Menu";
 import { useUser } from "@/app/hooks/user";
 import { motion, AnimatePresence } from "framer-motion";
 import { getProfilePictureUrl } from "../utils/getProfilePicture";
+import NotificationModal from "./NotificationModal";
 
 export default function Header() {
   const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
+  const [isNotifOpen, setNotifOpen] = useState<boolean>(false);
 
   const toggleMenu = () => {
+    setNotifOpen(false);
     setMenuOpen(!isMenuOpen);
+  };
+
+  const toggleNotification = () => {
+    setMenuOpen(false);
+    setNotifOpen(!isNotifOpen);
   };
 
   const { user, loading } = useUser();
@@ -33,96 +41,108 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-background-secondary w-full px-16 py-2 max-lg:px-8 flex items-center justify-between sticky top-0 z-50">
-      <div className="flex items-center gap-8 max-w-lg w-full">
-        <Link href={isAuthenticated() ? "/home" : "/"}>
-          <Image
-            src={"/logos/bg-none.png"}
-            width={100}
-            height={44}
-            unoptimized
-            alt="Anônimo Angola Logo"
-            className="w-36 object-contain max-lg:w-24"
-          />
-        </Link>
+    <>
+      <header className="bg-background-secondary w-full px-16 py-2 max-lg:px-8 flex items-center justify-between sticky top-0 z-50">
+        <div className="flex items-center gap-8 max-w-lg w-full">
+          <Link href={isAuthenticated() ? "/home" : "/"}>
+            <Image
+              src={"/logos/bg-none.png"}
+              width={100}
+              height={44}
+              unoptimized
+              alt="Anônimo Angola Logo"
+              className="w-36 object-contain max-lg:w-24"
+            />
+          </Link>
+
+          {isAuthenticated() && (
+            <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2 w-full max-lg:hidden">
+              <Search className="text-gray-600" />
+              <input
+                type="text"
+                placeholder="Pesquisar"
+                className="bg-transparent outline-none w-full"
+              />
+            </div>
+          )}
+        </div>
 
         {isAuthenticated() && (
-          <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2 w-full max-lg:hidden">
-            <Search className="text-gray-600" />
-            <input
-              type="text"
-              placeholder="Pesquisar"
-              className="bg-transparent outline-none w-full"
-            />
+          <div className="flex gap-6 relative w-full max-w-xs items-center justify-end">
+            <button
+              onClick={() => toggleNotification()}
+              className="p-2 rounded-full bg-white/80 hover:bg-gray-200 transition-colors duration-300 cursor-pointer">
+              <Bell className="text-gray-600" />
+            </button>
+
+            <AnimatePresence>
+              {isNotifOpen && (
+                <motion.div
+                  className="absolute right-12 top-11 z-20"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}>
+                  <NotificationModal setOpen={setNotifOpen} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <button
+              onClick={toggleMenu}
+              className="cursor-pointer">
+              {user?.profile_picture && (
+                <Image
+                  src={getProfilePictureUrl(user.profile_picture)}
+                  width={385}
+                  height={385}
+                  unoptimized
+                  alt={user.anon_name}
+                  className="rounded-full bg-gray-300 w-10"
+                />
+              )}
+            </button>
+
+            <AnimatePresence>
+              {isMenuOpen && (
+                <motion.div
+                  className="absolute right-0 top-11 w-fit z-20"
+                  variants={menuVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit">
+                  <Menu
+                    setMenuClosed={setMenuOpen}
+                    user={user}
+                    loading={loading}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
-      </div>
 
-      {isAuthenticated() && (
-        <div className="flex gap-6 relative w-full max-w-xs items-center justify-end">
-          <ul className="flex items-center gap-4">
-            <li>
-              <button className="p-2 rounded-full bg-white/80 hover:bg-gray-200 transition-colors duration-300 cursor-pointer">
-                <Bell className="text-gray-600" />
-              </button>
-            </li>
-          </ul>
+        {!isAuthenticated() && (
+          <nav>
+            <ul className="flex gap-2 items-center">
+              <li>
+                <Link
+                  href="/login"
+                  className="btn-primary">
+                  Entrar na minha conta
+                </Link>
+              </li>
 
-          <button
-            onClick={toggleMenu}
-            className="cursor-pointer">
-            {user?.profile_picture && (
-              <Image
-                src={getProfilePictureUrl(user.profile_picture)}
-                width={385}
-                height={385}
-                unoptimized
-                alt={user.anon_name}
-                className="rounded-full bg-gray-300 w-10"
-              />
-            )}
-          </button>
-
-          <AnimatePresence>
-            {isMenuOpen && (
-              <motion.div
-                className="absolute right-0 top-11 w-fit z-20"
-                variants={menuVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit">
-                <Menu
-                  setMenuClosed={setMenuOpen}
-                  user={user}
-                  loading={loading}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
-
-      {!isAuthenticated() && (
-        <nav>
-          <ul className="flex gap-2 items-center">
-            <li>
-              <Link
-                href="/login"
-                className="btn-primary">
-                Entrar na minha conta
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                href="/register"
-                className="btn-secondary">
-                Criar perfil anônimo gratuito
-              </Link>
-            </li>
-          </ul>
-        </nav>
-      )}
-    </header>
+              <li>
+                <Link
+                  href="/register"
+                  className="btn-secondary">
+                  Criar perfil anônimo gratuito
+                </Link>
+              </li>
+            </ul>
+          </nav>
+        )}
+      </header>
+    </>
   );
 }
