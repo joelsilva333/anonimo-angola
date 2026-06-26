@@ -26,7 +26,7 @@ export default function NotificationModal({ setOpen }: NotificationModalProps) {
   ];
 
   return (
-    <div className="card w-80 shadow-2xl rounded-3xl p-4 bg-white border border-gray-100 flex flex-col gap-3">
+    <div className="card w-80 shadow-2xl rounded-2xl p-4 bg-white border border-gray-100 flex flex-col gap-3">
       <div className="flex items-center justify-between border-b border-gray-100 pb-2">
         <h3 className="font-bold text-sm flex items-center gap-1.5 uppercase tracking-wide">
           Alertas Recentes
@@ -39,7 +39,6 @@ export default function NotificationModal({ setOpen }: NotificationModalProps) {
         </Link>
       </div>
 
-      {/* Lista Rápida */}
       <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
         {quickNotifications.length === 0 ? (
           <p className="text-xs text-black/50 text-center py-6">
@@ -64,7 +63,7 @@ export default function NotificationModal({ setOpen }: NotificationModalProps) {
                     <MessageCircle size={14} />
                   )}
                 </div>
-                <span className="text-gray-600 truncate max-w-[160px]">
+                <span className="text-gray-700 truncate max-w-lg w-full">
                   {notif.title}
                 </span>
               </div>
