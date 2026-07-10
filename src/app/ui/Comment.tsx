@@ -10,6 +10,7 @@ import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { api } from "@/app/api/config";
 import { motion, AnimatePresence } from "framer-motion";
+import { getProfilePictureUrl } from "../utils/getProfilePicture";
 
 interface ReplyInput {
   text: string;
@@ -96,7 +97,7 @@ export default function Comment({
     setCommentLikesCount((prev) => (previousLiked ? prev - 1 : prev + 1));
 
     try {
-      const response = await api.post(`/reactions/comment/${comment.id}`, {
+      const response = await api.post(`/reactions/${comment.id}`, {
         type: previousLiked ? "dislike" : "like",
       });
 
@@ -125,7 +126,7 @@ export default function Comment({
     );
 
     try {
-      const response = await api.post(`/reactions/answer/${answerId}`, {
+      const response = await api.post(`/reactions/${answerId}`, {
         type: currentLiked ? "dislike" : "like",
       });
 
@@ -170,7 +171,7 @@ export default function Comment({
         <span className="flex gap-3 items-center">
           {comment.profile_picture && (
             <Image
-              src={comment.profile_picture}
+              src={getProfilePictureUrl(comment.profile_picture)}
               width={300}
               height={300}
               unoptimized
