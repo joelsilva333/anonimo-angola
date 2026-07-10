@@ -15,7 +15,13 @@ import { api } from "@/app/api/config";
 import { AnimatePresence, motion } from "framer-motion";
 import { ShareResponse } from "../interfaces/share";
 import Link from "next/link";
-import { FaTimes, FaWhatsapp, FaFacebookF, FaLinkedinIn, FaRegCopy } from "react-icons/fa";
+import {
+  FaTimes,
+  FaWhatsapp,
+  FaFacebookF,
+  FaLinkedinIn,
+  FaRegCopy,
+} from "react-icons/fa";
 import { getProfilePictureUrl } from "../utils/getProfilePicture";
 
 interface CommentInput {
@@ -94,11 +100,10 @@ export default function Post({
       return;
     }
 
-    const type =
-      liked === true && post.reaction_type === "like" ? "dislike" : "like";
+    const type = "like";
 
     try {
-      const response = await api.post(`/reactions/post/${post.id}`, {
+      const response = await api.post(`/reactions/${post.id}`, {
         type: type,
       });
 
