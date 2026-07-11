@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, Menu as MenuIcon, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -14,15 +14,25 @@ import useGetNotifications from "../hooks/get-notifications";
 export default function Header() {
   const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
   const [isNotifOpen, setNotifOpen] = useState<boolean>(false);
+  // Estado para controlar o menu móvel dos usuários desautenticados
+  const [isMobileNavOpen, setMobileNavOpen] = useState<boolean>(false);
 
   const toggleMenu = () => {
     setNotifOpen(false);
+    setMobileNavOpen(false);
     setMenuOpen(!isMenuOpen);
   };
 
   const toggleNotification = () => {
     setMenuOpen(false);
+    setMobileNavOpen(false);
     setNotifOpen(!isNotifOpen);
+  };
+
+  const toggleMobileNav = () => {
+    setMenuOpen(false);
+    setNotifOpen(false);
+    setMobileNavOpen(!isMobileNavOpen);
   };
 
   const { user, loading } = useUser();
@@ -126,26 +136,43 @@ export default function Header() {
           </div>
         )}
 
+        {/* --- ALTERAÇÃO AQUI: Responsividade max-lg para Desautenticados --- */}
         {!isAuthenticated() && (
-          <nav>
-            <ul className="flex gap-2 items-center">
-              <li>
-                <Link
-                  href="/login"
-                  className="btn-primary">
-                  Entrar na minha conta
-                </Link>
-              </li>
+          <div className="relative">
+            {/* Botão Hambúrguer: Visível apenas em telas menores que 1024px (max-lg) */}
+            <button 
+              onClick={toggleMobileNav}
+              className="hidden max-lg:block p-2 text-gray-700 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+            >
+              {isMobileNavOpen ? <X size={24} /> : <MenuIcon size={24} />}
+            </button>
 
-              <li>
-                <Link
-                  href="/register"
-                  className="btn-secondary">
-                  Criar perfil anônimo gratuito
-                </Link>
-              </li>
-            </ul>
-          </nav>
+            {/* Menu de Navegação */}
+            <nav className={`
+              max-lg:absolute max-lg:right-0 max-lg:top-10 max-lg:bg-background-secondary max-lg:p-4 max-lg:rounded-xl max-lg:shadow-lg max-lg:w-64 max-lg:border max-lg:border-white/10
+              ${isMobileNavOpen ? 'max-lg:block' : 'max-lg:hidden'}
+            `}>
+              <ul className="flex gap-2 items-center max-lg:flex-col max-lg:items-stretch max-lg:gap-3">
+                <li className="w-full">
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileNavOpen(false)}
+                    className="btn-primary block text-center w-full whitespace-nowrap">
+                    Entrar na minha conta
+                  </Link>
+                </li>
+
+                <li className="w-full">
+                  <Link
+                    href="/register"
+                    onClick={() => setMobileNavOpen(false)}
+                    className="btn-secondary block text-center w-full whitespace-nowrap">
+                    Criar perfil anônimo gratuito
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          </div>
         )}
       </header>
     </>

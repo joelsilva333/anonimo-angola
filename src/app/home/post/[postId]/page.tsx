@@ -31,13 +31,13 @@ export default function PostDetailPage({
   if (error || !post) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <div className="bg-zinc-900/50 p-4 rounded-full text-zinc-600 mb-4">
+        <div className="bg-secondary/50 p-4 rounded-full text-secondary mb-4">
           <MessageCircle size={40} />
         </div>
-        <h3 className="text-xl font-semibold text-zinc-200">
+        <h3 className="text-xl font-semibold">
           Desabafo não encontrado
         </h3>
-        <p className="text-zinc-400 text-sm mt-2 max-w-sm">
+        <p className=" text-sm mt-2 max-w-sm">
           O link pode estar partido ou o desabafo foi apagado pelo autor.
         </p>
         <button

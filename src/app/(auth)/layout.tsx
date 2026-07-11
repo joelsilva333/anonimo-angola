@@ -58,20 +58,24 @@ export default function Layout({
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
-        className="flex-1 flex items-center justify-center max-lg:flex-col p-6">
+        className="flex-1 flex items-center justify-center flex-col p-6">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mb-6 lg:hidden">
-          <Image
-            src="/logos/bg-none.png"
-            alt="Logo"
-            width={500}
-            height={165}
-            unoptimized
-            className="max-lg:w-52"
-          />
+          <Link
+            href="/"
+            className="flex items-center gap-2">
+            <Image
+              src="/logos/bg-none.png"
+              alt="Logo"
+              width={500}
+              height={165}
+              unoptimized
+              className="w-40"
+            />
+          </Link>
         </motion.div>
 
         <AnimatePresence mode="wait">
@@ -85,6 +89,12 @@ export default function Layout({
             {children}
           </motion.div>
         </AnimatePresence>
+
+        <Link
+        href="/"
+        className="text-center text-secondary mt-2 flex items-center justify-center gap-2 font-bold cursor-pointer hover:scale-110 transition-all duration-300">
+			Continuar a ler publicações anônimas
+      </Link>
       </motion.div>
     </div>
   );

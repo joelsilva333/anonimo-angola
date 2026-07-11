@@ -97,7 +97,7 @@ export default function Comment({
     setCommentLikesCount((prev) => (previousLiked ? prev - 1 : prev + 1));
 
     try {
-      const response = await api.post(`/reactions/${comment.id}`, {
+      const response = await api.post(`/reactions/comment/${comment.id}`, {
         type: previousLiked ? "dislike" : "like",
       });
 
@@ -126,7 +126,7 @@ export default function Comment({
     );
 
     try {
-      const response = await api.post(`/reactions/${answerId}`, {
+      const response = await api.post(`/reactions/answer/${answerId}`, {
         type: currentLiked ? "dislike" : "like",
       });
 
@@ -268,7 +268,7 @@ export default function Comment({
                     <div className="flex items-center gap-2 mt-1">
                       {answer.profile_picture && (
                         <Image
-                          src={answer.profile_picture}
+                          src={getProfilePictureUrl(answer.profile_picture)}
                           width={24}
                           height={24}
                           unoptimized
