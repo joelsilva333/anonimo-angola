@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const description =
       post.text.length > 140 ? `${post.text.substring(0, 137)}...` : post.text;
 
-    const shareUrl = `${baseUrl}/posts/${postId}`;
+    const shareUrl = `${baseUrl}/post/${postId}`;
     const imageOgUrl = `${baseUrl}/logos/bg-white.png`;
 
     return {
