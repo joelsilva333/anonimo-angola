@@ -45,7 +45,7 @@ export default function PostDetailPageClient({ postId }: { postId: string }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="w-full max-w-2xl mx-auto px-4 py-6">
+      className="w-full max-w-2xl mx-auto max-lg:px-2 px-4 py-6">
       <button
         onClick={() => router.push("/")}
         className="group flex items-center gap-2 hover:text-primary/80 font-medium mb-6 transition-colors duration-200 cursor-pointer">

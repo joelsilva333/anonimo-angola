@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     process.env.NEXT_PUBLIC_BASE_URL || "https://anonimo-angola.vercel.app";
 
   try {
-    const response = await fetch(`${apiUrl}/posts/${postId}`, {
+    const response = await fetch(`${apiUrl}/api/posts/${postId}`, {
       next: { revalidate: 30 },
     });
 

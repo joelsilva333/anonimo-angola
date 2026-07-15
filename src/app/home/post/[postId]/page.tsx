@@ -30,7 +30,7 @@ export default function PostDetailPage({
 
   if (error || !post) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 max-lg:px-2">
         <div className="bg-secondary/50 p-4 rounded-full text-secondary mb-4">
           <MessageCircle size={40} />
         </div>
