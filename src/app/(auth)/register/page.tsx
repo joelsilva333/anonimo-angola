@@ -8,6 +8,7 @@ import { toast, ToastContainer } from "react-toastify";
 
 interface FormData {
   username: string;
+  phone_number: string;
   password: string;
   confirmPassword: string;
 }
@@ -27,6 +28,7 @@ export default function Register() {
       setLoading(true);
       const response = await api.post("/auth/register", {
         anon_name: data.username,
+        phone_number: data.phone_number,
         password: data.password,
       });
 
@@ -87,8 +89,33 @@ export default function Register() {
             />
           </label>
 
+          
+
           {errors.username && (
             <p className="text-red-500 text-sm">{errors.username.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="flex flex-col gap-2 w-full">
+            Número de telefone
+            <input
+              {...register("phone_number", {
+                required: "O número de telefone é obrigatório",
+                pattern: {
+                  value: /^\+244\d{9}$/,
+                  message: "O número de telefone deve estar no formato +244XXXXXXXXX"
+                }
+              })}
+              placeholder="Ex: +244123456789"
+              type="text"
+              name="phone_number"
+              className="w-full bg-white rounded-md px-4 py-2 outline-none"
+            />
+          </label>
+
+          {errors.phone_number && (
+            <p className="text-red-500 text-sm">{errors.phone_number.message}</p>
           )}
         </div>
 
