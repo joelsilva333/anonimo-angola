@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -10,54 +11,81 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { api } from "@/app/api/config";
 
-// Interface demonstrativa baseada no teu Backend genérico
 interface NotificationInterface {
   id: string;
-  title: string;
-  description: string;
-  type: "like" | "comment";
-  target_id: string; // ID do post para redirecionar
-  is_read: boolean;
-  created_at: string;
+  targetId: string;
+  type: "LIKE" | "COMMENT";
+  isRead: boolean;
+  createdAt: string;
+  sender: {
+    anon_name: string;
+  };
+}
+
+function formatRelativeTime(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (isNaN(date.getTime())) return dateString;
+
+  if (diffInSeconds < 60) return "agora mesmo";
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `há ${diffInMinutes}min`;
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `há ${diffInHours}h`;
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays === 1) return "ontem";
+  if (diffInDays < 7) return `há ${diffInDays}d`;
+
+  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 }
 
 export default function NotificationsPage() {
-  // Simulando dados vindo do NotificationRepository / Service
-  const [notifications, setNotifications] = useState<NotificationInterface[]>([
-    {
-      id: "1",
-      title: "Novo Apoio!",
-      description:
-        "Alguém apoiou o teu desabafo sobre 'Crise existencial na faculdade'.",
-      type: "like",
-      target_id: "uuid-post-1",
-      is_read: false,
-      created_at: "Há 5 min",
-    },
-    {
-      id: "2",
-      title: "Novo Comentário!",
-      description: "Um utilizador anônimo comentou no teu post.",
-      type: "comment",
-      target_id: "uuid-post-2",
-      is_read: false,
-      created_at: "Há 1 hora",
-    },
-    {
-      id: "3",
-      title: "Apoio recebido",
-      description: "O teu comentário foi apoiado por outra pessoa.",
-      type: "like",
-      target_id: "uuid-post-1",
-      is_read: true,
-      created_at: "Ontem",
-    },
-  ]);
+  const [notifications, setNotifications] = useState<NotificationInterface[]>(
+    [],
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, is_read: true })));
+  const fetchNotifications = async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get("/notification");
+      setNotifications(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar notificações:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const handleMarkAsRead = async (notiId: string) => {
+    try {
+      await api.patch(`/notification/${notiId}/read`);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notiId ? { ...n, isRead: true } : n)),
+      );
+    } catch (error) {
+      console.error("Erro ao marcar notificação como lida:", error);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await api.patch("/notification/read-all");
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch (error) {
+      console.error("Erro ao marcar todas como lidas:", error);
+    }
   };
 
   const clearAll = () => {
@@ -69,7 +97,6 @@ export default function NotificationsPage() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       className="w-full mt-5 flex flex-col gap-6">
-      {/* Top Bar de Navegação */}
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-3">
           <Link
@@ -78,7 +105,7 @@ export default function NotificationsPage() {
             <ArrowLeft size={20} />
           </Link>
           <h1 className="text-lg font-bold uppercase flex items-center gap-2">
-           Notificações
+            Notificações
           </h1>
         </div>
 
@@ -100,7 +127,11 @@ export default function NotificationsPage() {
       </div>
 
       <div className="card flex flex-col gap-4">
-        {notifications.length === 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12 text-black/40">
+            Carregando notificações...
+          </div>
+        ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-black/50 gap-2">
             <Bell
               size={40}
@@ -115,21 +146,19 @@ export default function NotificationsPage() {
             {notifications.map((notification) => (
               <Link
                 key={notification.id}
-                href={`/home/post/${notification.target_id}`}
+                href={`/home/post/${notification.targetId}`}
+                onClick={() => handleMarkAsRead(notification.id)}
                 className={`flex items-start justify-between p-4 rounded-2xl transition gap-4 mb-2 last:mb-0 ${
-                  notification.is_read
+                  notification.isRead
                     ? "bg-white hover:bg-gray-50"
                     : "bg-secondary/10 hover:bg-secondary/20"
                 }`}>
                 <div className="flex gap-3 items-center justify-center">
-                  <div
-                    className={`p-1.5 rounded-full bg-secondary/10 text-secondary`}>
-                    {notification.type === "like" ? (
+                  <div className="p-1.5 rounded-full bg-secondary/10 text-secondary shrink-0">
+                    {notification.type === "LIKE" ? (
                       <Heart
                         size={18}
-                        fill={
-                          notification.type === "like" ? "currentColor" : "none"
-                        }
+                        fill="currentColor"
                       />
                     ) : (
                       <MessageCircle size={18} />
@@ -138,21 +167,23 @@ export default function NotificationsPage() {
 
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-gray-700 truncate">
-                        {notification.title}
+                      <span className="text-gray-700 font-semibold truncate">
+                        {notification.sender?.anon_name}
                       </span>
-                      {!notification.is_read && (
+                      {!notification.isRead && (
                         <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
                       )}
                     </div>
                     <p className="text-sm text-black/80 leading-relaxed">
-                      {notification.description}
+                      {notification.type === "LIKE"
+                        ? "curtiu o seu post."
+                        : "comentou no seu post."}
                     </p>
                   </div>
                 </div>
 
                 <span className="text-xs text-black/50 whitespace-nowrap pt-1">
-                  {notification.created_at}
+                  {formatRelativeTime(notification.createdAt)}
                 </span>
               </Link>
             ))}

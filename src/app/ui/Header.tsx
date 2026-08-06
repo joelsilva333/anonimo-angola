@@ -3,19 +3,65 @@
 import { Bell, Search, Menu as MenuIcon, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Menu from "./Menu";
 import { useUser } from "@/app/hooks/user";
 import { motion, AnimatePresence } from "framer-motion";
 import { getProfilePictureUrl } from "../utils/getProfilePicture";
 import NotificationModal from "./NotificationModal";
 import useGetNotifications from "../hooks/get-notifications";
+import { api } from "../api/config";
 
 export default function Header() {
   const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
   const [isNotifOpen, setNotifOpen] = useState<boolean>(false);
-  // Estado para controlar o menu móvel dos usuários desautenticados
   const [isMobileNavOpen, setMobileNavOpen] = useState<boolean>(false);
+
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  // Referência do container do menu e notificações para detectar cliques fora
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await api.get("/notification/unread-count");
+      setUnreadCount(
+        response.data.count ?? response.data.unreadCount ?? response.data,
+      );
+    } catch (error) {
+      console.error("Erro ao carregar contagem:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      fetchUnreadCount();
+    }
+  }, [isNotifOpen]);
+
+  // FECHAR MODAIS AO CLICAR FORA (Click Outside Hook)
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setMenuOpen(false);
+        setNotifOpen(false);
+        setMobileNavOpen(false);
+      }
+    };
+
+    // Adiciona o listener quando algum modal estiver aberto
+    if (isMenuOpen || isNotifOpen || isMobileNavOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // Cleanup ao desmontar ou fechar
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMenuOpen, isNotifOpen, isMobileNavOpen]);
 
   const toggleMenu = () => {
     setNotifOpen(false);
@@ -36,22 +82,20 @@ export default function Header() {
   };
 
   const { user, loading } = useUser();
-  
+
   const menuVariants = {
     initial: { opacity: 0, y: -20 },
     animate: { opacity: 1, y: 0, transition: { duration: 0.2 } },
     exit: { opacity: 0, y: -20, transition: { duration: 0.15 } },
   };
-  
+
   const isAuthenticated = (): boolean => {
     if (typeof window !== "undefined") {
       return !!localStorage.getItem("user_data");
     }
     return false;
   };
-  
-  const { notifications } = useGetNotifications(isAuthenticated());
-  
+
   return (
     <>
       <header className="bg-background-secondary w-full px-16 py-2 max-lg:px-8 flex items-center justify-between sticky top-0 z-50">
@@ -80,12 +124,17 @@ export default function Header() {
         </div>
 
         {isAuthenticated() && (
-          <div className="flex gap-6 relative w-full max-w-xs items-center justify-end">
+          <div 
+            ref={containerRef} // Encapsula a área dos botões e popups
+            className="flex gap-6 relative w-full max-w-xs items-center justify-end">
+            
             <button
               onClick={() => toggleNotification()}
               className="p-2 rounded-full bg-white/80 hover:bg-gray-200 transition-colors duration-300 cursor-pointer relative">
-              {notifications.some((notification) => !notification.isRead) && (
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-2 w-5 h-5 flex justify-center items-center bg-red-500 rounded-full animate-pulse text-white text-xs">
+                  {unreadCount}
+                </span>
               )}
               <Bell className="text-gray-600" />
             </button>
@@ -136,21 +185,18 @@ export default function Header() {
           </div>
         )}
 
-        {/* --- ALTERAÇÃO AQUI: Responsividade max-lg para Desautenticados --- */}
         {!isAuthenticated() && (
-          <div className="relative">
-            {/* Botão Hambúrguer: Visível apenas em telas menores que 1024px (max-lg) */}
-            <button 
+          <div ref={containerRef} className="relative">
+            <button
               onClick={toggleMobileNav}
-              className="hidden max-lg:block p-2 text-gray-700 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
-            >
+              className="hidden max-lg:block p-2 text-gray-700 hover:bg-white/20 rounded-lg transition-colors cursor-pointer">
               {isMobileNavOpen ? <X size={24} /> : <MenuIcon size={24} />}
             </button>
 
-            {/* Menu de Navegação */}
-            <nav className={`
+            <nav
+              className={`
               max-lg:absolute max-lg:right-0 max-lg:top-10 max-lg:bg-background-secondary max-lg:p-4 max-lg:rounded-xl max-lg:shadow-lg max-lg:w-64 max-lg:border max-lg:border-white/10
-              ${isMobileNavOpen ? 'max-lg:block' : 'max-lg:hidden'}
+              ${isMobileNavOpen ? "max-lg:block" : "max-lg:hidden"}
             `}>
               <ul className="flex gap-2 items-center max-lg:flex-col max-lg:items-stretch max-lg:gap-3">
                 <li className="w-full">

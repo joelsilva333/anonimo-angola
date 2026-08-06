@@ -103,7 +103,7 @@ export default function Post({
     const type = "like";
 
     try {
-      const response = await api.post(`/reactions/${post.id}`, {
+      const response = await api.post(`/reactions/post/${post.id}`, {
         type: type,
       });
 
