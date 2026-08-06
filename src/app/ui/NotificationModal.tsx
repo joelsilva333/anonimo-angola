@@ -14,8 +14,8 @@ export default function NotificationModal({ setOpen }: NotificationModalProps) {
   console.log("Notifications in modal:", notifications);
 
   return (
-    <div className="card max-w-2xl w-full shadow-2xl rounded-2xl p-4 bg-white border border-gray-100 flex flex-col gap-3">
-      <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+    <div className="card w-sm shadow-2xl rounded-2xl p-4 bg-white border border-gray-100 flex flex-col gap-3">
+      <div className="flex items-center justify-between border-b border-gray-100 pb-2 gap-12 w-full">
         <h3 className="font-bold text-sm flex items-center gap-1.5 uppercase tracking-wide">
           Alertas Recentes
         </h3>

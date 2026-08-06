@@ -268,7 +268,7 @@ export default function Comment({
                     <div className="flex items-center gap-2 mt-1">
                       {answer.profile_picture && (
                         <Image
-                          src={answer.profile_picture}
+                          src={getProfilePictureUrl(answer.profile_picture)}
                           width={24}
                           height={24}
                           unoptimized

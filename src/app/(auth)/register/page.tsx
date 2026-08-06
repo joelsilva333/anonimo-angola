@@ -107,7 +107,7 @@ export default function Register() {
                   message: "O número de telefone deve estar no formato +244XXXXXXXXX"
                 }
               })}
-              placeholder="Ex: +244123456789"
+              placeholder="Ex: +244923456789"
               type="text"
               name="phone_number"
               className="w-full bg-white rounded-md px-4 py-2 outline-none"

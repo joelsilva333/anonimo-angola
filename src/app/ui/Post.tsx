@@ -342,7 +342,6 @@ export default function Post({
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: "spring", duration: 0.5 }}
               className="bg-white p-8 rounded-[2.5rem] shadow-2xl max-w-sm w-full mx-4 flex flex-col text-center items-center border border-gray-100">
-              {/* Ícone de Destaque / Identidade Visual */}
               <motion.div
                 initial={{ rotate: -10, scale: 0.8 }}
                 animate={{ rotate: 0, scale: 1 }}
@@ -355,7 +354,6 @@ export default function Post({
                   strokeWidth={2}
                   stroke="currentColor"
                   className="w-8 h-8">
-                  {/* Um ícone personalizado combinando mensagens ocultas/cadeado */}
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -414,7 +412,6 @@ export default function Post({
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: "spring", duration: 0.4 }}
               className="relative bg-white p-6 sm:p-8 rounded-[2rem] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] max-w-sm w-full flex flex-col text-center items-center border border-gray-100">
-              {/* Botão Fechar Superior */}
               <button
                 onClick={() => setIsShareModalOpen(false)}
                 className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
@@ -422,7 +419,6 @@ export default function Post({
                 <FaTimes className="text-lg" />
               </button>
 
-              {/* Cabeçalho */}
               <div className="mb-6">
                 <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-1.5">
                   Partilhar este desabafo
@@ -432,9 +428,7 @@ export default function Post({
                 </p>
               </div>
 
-              {/* Grelha de Botões */}
               <div className="grid grid-cols-2 gap-3 w-full">
-                {/* WhatsApp */}
                 <Link
                   href={shareLinks.whatsapp}
                   target="_blank"
@@ -444,7 +438,6 @@ export default function Post({
                   <span>WhatsApp</span>
                 </Link>
 
-                {/* Facebook */}
                 <Link
                   href={shareLinks.facebook}
                   target="_blank"
@@ -454,7 +447,6 @@ export default function Post({
                   <span>Facebook</span>
                 </Link>
 
-                {/* LinkedIn */}
                 <Link
                   href={shareLinks.linkedin}
                   target="_blank"
@@ -464,7 +456,6 @@ export default function Post({
                   <span>LinkedIn</span>
                 </Link>
 
-                {/* Copiar Link */}
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(shareLinks.rawLink);
@@ -476,7 +467,6 @@ export default function Post({
                 </button>
               </div>
 
-              {/* Botão Cancelar Inferior */}
               <button
                 onClick={() => setIsShareModalOpen(false)}
                 className="w-full py-3 mt-4 text-sm font-semibold text-gray-500 hover:text-gray-800 hover:bg-gray-50 rounded-xl transition-all duration-200">
