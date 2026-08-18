@@ -8,9 +8,13 @@ import { api } from "../api/config";
 import { useUser } from "../hooks/user";
 import { toast, ToastContainer } from "react-toastify";
 import Post from "../ui/Post";
+import SponsorBanner from "../ui/SponsorBanner";
 import { useGetPosts } from "../hooks/post";
+import { useGetSponsors } from "../hooks/get-sponsors";
 import { motion, AnimatePresence } from "framer-motion";
 import { getProfilePictureUrl } from "../utils/getProfilePicture";
+
+const POSTS_BETWEEN_SPONSORS = 4;
 
 interface FormData {
   text: string;
@@ -21,6 +25,7 @@ export default function Home() {
   const { user } = useUser();
   const [loading, setLoading] = useState<boolean>(false);
   const { posts, refetch } = useGetPosts();
+  const { sponsors } = useGetSponsors();
 
   const {
     register,
@@ -122,16 +127,25 @@ export default function Home() {
         initial="hidden"
         animate="show"
         className="w-full flex flex-col gap-4">
-        {posts.map((post) => (
-          <motion.div
-            key={post.id}
-            variants={item}>
-            <Post
-              post={post}
-              refetch={refetch}
-            />
-          </motion.div>
-        ))}
+        {posts.map((post, index) => {
+          const sponsorSlot =
+            sponsors.length > 0 && index > 0 && index % POSTS_BETWEEN_SPONSORS === 0
+              ? sponsors[(index / POSTS_BETWEEN_SPONSORS - 1) % sponsors.length]
+              : null;
+
+          return (
+            <motion.div
+              key={post.id}
+              variants={item}
+              className="w-full flex flex-col gap-4">
+              {sponsorSlot && <SponsorBanner sponsor={sponsorSlot} />}
+              <Post
+                post={post}
+                refetch={refetch}
+              />
+            </motion.div>
+          );
+        })}
       </motion.div>
 
       <AnimatePresence>

@@ -43,6 +43,10 @@ export default function Menu({
 
   const menuItems: MenuInterface[] = [
     {
+      title: "Apoio Emocional",
+      onClick: () => handleMenuClick("/home/support"),
+    },
+    {
       title: "Definições",
       onClick: () => handleMenuClick("/home/settings"),
     },

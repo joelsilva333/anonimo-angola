@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 interface ProxyContext {
   params: Promise<{ path?: string[] }>;
 }
 
-async function handleProxy(request: Request, context: ProxyContext) {
+async function handleProxy(request: NextRequest, context: ProxyContext) {
   const backendUrl = process.env.API_SECRET_URL;
 
   if (!backendUrl) {
@@ -12,7 +12,7 @@ async function handleProxy(request: Request, context: ProxyContext) {
       { error: "URL do backend não configurada." },
       { status: 500 },
     );
-  } 
+  }
 
   const resolvedParams = await context.params;
   const pathSegment = resolvedParams.path ? resolvedParams.path.join("/") : "";
@@ -22,6 +22,13 @@ async function handleProxy(request: Request, context: ProxyContext) {
 
   const headers = new Headers(request.headers);
   headers.delete("host");
+
+  // O fetch server-side não propaga cookies para o backend.
+  // Se o browser enviou um cookie aa_token, injectamo-lo como Authorization.
+  const token = request.cookies.get("aa_token")?.value;
+  if (token && !headers.has("authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
 
   try {
     const body = ["POST", "PUT", "PATCH"].includes(request.method)
