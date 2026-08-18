@@ -1,101 +1,91 @@
-"use client";
-
-import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import type { Metadata } from "next";
 import AuthLeftSlider from "./ui/AuthLeftSlider";
-import Link from "next/link";
 
-export default function Layout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export const metadata: Metadata = {
+  title: "Autenticação",
+  description: "Aceda à sua conta anónima no Anônimo Angola.",
+};
+
+export default function AuthLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
-      <motion.div
-        initial={{ opacity: 0, x: -50 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6 }}
-        className="flex-1 flex items-center justify-center bg-background-secondary max-lg:hidden w-1/2 relative">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/20 to-black flex flex-col justify-between items-start p-8 gap-4 z-20">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="">
-            <Link
-              href="/"
-              className="flex items-center gap-2">
-              <Image
-                src="/logos/white-bg-none.png"
-                alt="Logo"
-                width={500}
-                height={165}
-                unoptimized
-                className="w-40"
-              />
-            </Link>
-          </motion.div>
-
-          <div className="flex flex-col gap-4 max-w-md z-10 text-white/80">
-            <div>
-              <h1 className="text-2xl font-bold ">
-                Sinta-se à vontade para desabafar. Estamos aqui para ouvir.
-              </h1>
-              <p>Sua voz importa, mesmo que seja anônima.</p>
-            </div>
-
-            <p className="text-sm text-white">
-              &copy; {new Date().getFullYear()} Anônimo Angola. Todos os
-              direitos reservados à Joel Silva.
-            </p>
-          </div>
-        </div>
+    <div
+      className="min-h-screen flex"
+      style={{ fontFamily: "'Raleway', sans-serif" }}
+    >
+      {/* Coluna esquerda: slider de imagens */}
+      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
         <AuthLeftSlider />
-      </motion.div>
+        {/* Overlay com gradiente + copy */}
+        <div
+          className="absolute inset-0 flex flex-col justify-end p-10"
+          style={{
+            background: "linear-gradient(to top, rgba(30,30,30,0.72) 0%, transparent 55%)",
+          }}
+        >
+          <span
+            className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full mb-3 w-fit"
+            style={{ background: "rgba(133,204,132,0.25)", color: "#c8f5c7", border: "1px solid rgba(133,204,132,0.35)" }}
+          >
+            🛡 100% Anónimo
+          </span>
+          <h2 className="text-3xl font-bold text-white leading-snug mb-2">
+            A sua voz importa.<br />Mesmo que seja anônima.
+          </h2>
+          <p className="text-white/60 text-sm">
+            Junte-se a milhares de angolanos que partilham e apoiam-se mutuamente.
+          </p>
+        </div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, x: 50 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6 }}
-        className="flex-1 flex items-center justify-center flex-col p-6">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mb-6 lg:hidden">
-          <Link
-            href="/"
-            className="flex items-center gap-2">
-            <Image
-              src="/logos/bg-none.png"
-              alt="Logo"
-              width={500}
-              height={165}
-              unoptimized
-              className="w-40"
-            />
-          </Link>
-        </motion.div>
+      {/* Coluna direita: formulário */}
+      <div
+        className="flex-1 flex flex-col justify-center items-center relative"
+        style={{
+          background: "linear-gradient(135deg, #f0f2f0 0%, #e8f0e8 100%)",
+        }}
+      >
+        {/* Orb decorativo */}
+        <div
+          style={{
+            position: "absolute",
+            top: "10%",
+            right: "10%",
+            width: 220,
+            height: 220,
+            background: "radial-gradient(circle, rgba(133,204,132,0.20) 0%, transparent 70%)",
+            borderRadius: "50%",
+            pointerEvents: "none",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: "15%",
+            left: "5%",
+            width: 160,
+            height: 160,
+            background: "radial-gradient(circle, rgba(133,204,132,0.12) 0%, transparent 70%)",
+            borderRadius: "50%",
+            pointerEvents: "none",
+          }}
+        />
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={JSON.stringify(children)}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.4 }}
-            className="w-full max-w-md">
-            {children}
-          </motion.div>
-        </AnimatePresence>
+        {/* Card do formulário */}
+        <div
+          className="w-full max-w-md relative z-10 rounded-3xl shadow-2xl"
+          style={{
+            background: "rgba(255,255,255,0.72)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.50)",
+          }}
+        >
+          {children}
+        </div>
 
-        <Link
-        href="/"
-        className="text-center text-secondary mt-2 flex items-center justify-center gap-2 font-bold cursor-pointer hover:scale-110 transition-all duration-300">
-			Continuar a ler publicações anônimas
-      </Link>
-      </motion.div>
+        <p className="mt-6 text-xs text-gray-400 text-center z-10" style={{ fontFamily: "'Raleway', sans-serif" }}>
+          © {new Date().getFullYear()} Anônimo Angola · Joel Silva
+        </p>
+      </div>
     </div>
   );
 }

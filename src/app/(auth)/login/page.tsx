@@ -2,146 +2,139 @@
 
 import { api } from "@/app/api/config";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import Cookies from "universal-cookie";
+import { Eye, EyeOff, User, Lock } from "lucide-react";
 
-interface FormData {
-  username: string;
-  password: string;
-}
+interface FormData { username: string; password: string; }
+
+const inputWrap = {
+  position: "relative" as const,
+  display: "flex",
+  alignItems: "center",
+};
+
+const iconStyle = {
+  position: "absolute" as const,
+  left: "14px",
+  color: "rgba(30,30,30,0.35)",
+  pointerEvents: "none" as const,
+};
+
+const inputStyle = {
+  width: "100%",
+  background: "rgba(255,255,255,0.55)",
+  backdropFilter: "blur(10px)",
+  border: "1px solid rgba(255,255,255,0.45)",
+  borderRadius: "14px",
+  padding: "11px 16px 11px 40px",
+  outline: "none",
+  fontFamily: "'Raleway', sans-serif",
+  fontSize: "0.875rem",
+  color: "#1e1e1e",
+  transition: "all 0.2s",
+};
 
 export default function Login() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>();
-
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const cookies = new Cookies();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
       setLoading(true);
-      const response = await api.post("/auth/login", {
-        anon_name: data.username,
-        password: data.password,
-      });
-
+      const response = await api.post("/auth/login", { anon_name: data.username, password: data.password });
       if (response.status === 200) {
-        const { token } = response.data;
-        const userData = JSON.stringify(response.data.user);
-
-        localStorage.setItem("user_data", userData);
-
-        cookies.set("aa_token", token, { path: "/", maxAge: 60 * 60 * 24 * 7 });
-
+        localStorage.setItem("user_data", JSON.stringify(response.data.user));
+        cookies.set("aa_token", response.data.token, { path: "/", maxAge: 60 * 60 * 24 * 7 });
         router.push("/home");
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.error ||
-        "Erro ao fazer login. Por favor, tente novamente.";
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+      toast.error(error?.response?.data?.error || "Erro ao fazer login. Tente novamente.");
+    } finally { setLoading(false); }
   };
 
   return (
-    <div className="w-full max-w-md lg:p-8 px-8 py-4">
-      <ToastContainer />
-      <form
-        className="flex flex-col gap-4 w-full"
-        onSubmit={handleSubmit(onSubmit)}>
-        <h1 className="font-semibold text-3xl max-lg:text-center max-lg:text-2xl">
-          Iniciar Sessão
-        </h1>
-        <div className="flex flex-col gap-1 w-full">
-          <label className="flex flex-col gap-2 w-full">
-            Identificador Anônimo
-            <input
-              placeholder="Ex: anonimo_dds"
-              {...register("username", {
-                required: "O identificador é obrigatório",
-              })}
-              type="text"
-              name="username"
-              className="w-full bg-white rounded-md px-4 py-2 outline-none"
-            />
-          </label>
-          {errors.username && (
-            <p className="text-red-500 text-sm">{errors.username.message}</p>
-          )}
+    <div className="w-full p-8 max-lg:px-6 max-lg:py-6" style={{ fontFamily: "'Raleway', sans-serif" }}>
+      <ToastContainer theme="colored" />
+
+      {/* Logo mobile */}
+      <div className="flex justify-center mb-6 lg:hidden">
+        <Image src="/logos/bg-none.png" width={120} height={44} unoptimized alt="Anônimo Angola" className="w-28 object-contain" />
+      </div>
+
+      <form className="flex flex-col gap-5 w-full" onSubmit={handleSubmit(onSubmit)}>
+        <div className="flex flex-col gap-1">
+          <h1 className="font-bold text-2xl text-gray-900">Iniciar Sessão</h1>
+          <p className="text-xs text-gray-400">Bem-vindo de volta à comunidade anónima.</p>
         </div>
 
-        <div className="flex flex-col gap-1 w-full">
-          <label className="flex flex-col gap-2 w-full">
-            Palavra-passe
+        {/* Identificador */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700">Identificador Anônimo</label>
+          <div style={inputWrap}>
+            <User size={16} style={iconStyle} />
             <input
-              {...register("password", {
-                required: "A palavra-passe é obrigatória",
-              })}
-              type="password"
-              name="password"
-              placeholder="*********"
-              className="w-full bg-white rounded-md px-4 py-2 outline-none"
+              placeholder="Ex: anonimo_dds"
+              {...register("username", { required: "O identificador é obrigatório" })}
+              type="text"
+              style={inputStyle}
             />
-          </label>
-          <div className="flex justify-between items-center mt-1">
-            {errors.password ? (
-              <p className="text-red-500 text-sm">{errors.password.message}</p>
-            ) : (
-              <span />
-            )}
-            <Link
-              href="/forgot-password"
-              className="text-xs text-primary hover:underline">
+          </div>
+          {errors.username && <p className="text-xs text-red-500">{errors.username.message}</p>}
+        </div>
+
+        {/* Password */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700">Palavra-passe</label>
+          <div style={{ ...inputWrap }}>
+            <Lock size={16} style={iconStyle} />
+            <input
+              {...register("password", { required: "A palavra-passe é obrigatória" })}
+              type={showPassword ? "text" : "password"}
+              placeholder="••••••••"
+              style={{ ...inputStyle, paddingRight: "44px" }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{ position: "absolute", right: "14px", color: "rgba(30,30,30,0.38)", cursor: "pointer", background: "none", border: "none" }}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+          <div className="flex justify-between items-center">
+            {errors.password
+              ? <p className="text-xs text-red-500">{errors.password.message}</p>
+              : <span />}
+            <Link href="/forgot-password" className="text-xs font-medium text-secondary hover:underline">
               Esqueceu a senha?
             </Link>
           </div>
         </div>
 
-        <div className="flex flex-col w-full">
-          <button
-            disabled={loading}
-            type="submit"
-            className="btn-primary">
+        {/* Botões */}
+        <div className="flex flex-col gap-3 mt-1">
+          <button disabled={loading} type="submit" className="btn-primary">
             {loading ? (
-              <div className="w-7 h-7 rounded-full border-t-2 border border-l-2 border-white animate-spin"></div>
-            ) : (
-              "Entrar"
-            )}
+              <div className="w-5 h-5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+            ) : "Entrar"}
           </button>
-          <Link
-            href="/register"
-            className="text-center text-primary mt-2 hover:underline">
+
+          <p className="text-center text-sm text-gray-500">
             Não tem uma conta?{" "}
-            <span className="font-semibold hover:text-[#333333] transition-colors duration-300">
-              Criar Perfil
-            </span>
-          </Link>
+            <Link href="/register" className="font-semibold text-secondary hover:underline">
+              Criar Perfil Grátis
+            </Link>
+          </p>
         </div>
       </form>
-
-      {/* <div className="flex items-center gap-4 text-gray-500 w-full my-4">
-				<hr className="w-full" />
-				ou
-				<hr className="w-full" />
-			</div>
-
-			<button
-				disabled={loading}
-				type="submit"
-				className="btn-secondary"
-			>
-				Entrar como anônimo visitante
-			</button> */}
     </div>
   );
 }

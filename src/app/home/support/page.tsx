@@ -30,21 +30,21 @@ export default function SupportPage() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full bg-white rounded-3xl p-6 flex flex-col gap-2 border border-gray-100">
+        className="w-full bg-white rounded-3xl p-6 max-lg:p-4 flex flex-col gap-2 border border-gray-100">
         <span className="flex items-center gap-3">
           <span className="bg-secondary/10 text-secondary p-2.5 rounded-2xl">
             <HeartHandshake size={22} />
           </span>
           <h1 className="text-2xl font-bold">Apoio Emocional</h1>
         </span>
-        <p className="text-sm text-gray-500 leading-relaxed">
+        <p className="text-sm text-gray-500 leading-relaxed max-lg:hidden">
           Este é um espaço anónimo para desabafares com uma IA que ouve sem
           julgar. Não é um profissional de saúde e não substitui terapia ou
           aconselhamento médico.
         </p>
       </motion.div>
 
-      <div className="w-full bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-4 flex items-start gap-3 text-sm">
+      <div className="w-full bg-amber-50 border border-amber-200 text-amber-800 hidden rounded-2xl p-4 items-start gap-3 text-sm">
         <ShieldAlert
           size={18}
           className="shrink-0 mt-0.5"
@@ -58,7 +58,7 @@ export default function SupportPage() {
 
       <div
         ref={scrollRef}
-        className="w-full bg-white rounded-3xl border border-gray-100 flex flex-col gap-4 p-6 min-h-[50vh] max-h-[60vh] overflow-y-auto">
+        className="w-full sticky bottom-22 bg-white rounded-3xl border border-gray-100 flex flex-col gap-4 p-6 min-h-[50vh] max-h-[60vh] overflow-y-auto">
         {loading && (
           <div className="flex items-center justify-center m-auto gap-1">
             <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" />
@@ -98,7 +98,7 @@ export default function SupportPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="w-full flex items-center gap-2 bg-white rounded-2xl border border-gray-200 p-2">
+        className="w-full flex items-center gap-2 sticky bottom-5 bg-white rounded-2xl border border-gray-200 p-2">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
