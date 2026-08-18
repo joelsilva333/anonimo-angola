@@ -9,7 +9,6 @@ import { useUser } from "@/app/hooks/user";
 import { motion, AnimatePresence } from "framer-motion";
 import { getProfilePictureUrl } from "../utils/getProfilePicture";
 import NotificationModal from "./NotificationModal";
-import useGetNotifications from "../hooks/get-notifications";
 import { api } from "../api/config";
 
 export default function Header() {
@@ -62,9 +61,21 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMenuOpen, isNotifOpen, isMobileNavOpen]);
 
-  const toggleMenu = () => { setNotifOpen(false); setMobileNavOpen(false); setMenuOpen(!isMenuOpen); };
-  const toggleNotification = () => { setMenuOpen(false); setMobileNavOpen(false); setNotifOpen(!isNotifOpen); };
-  const toggleMobileNav = () => { setMenuOpen(false); setNotifOpen(false); setMobileNavOpen(!isMobileNavOpen); };
+  const toggleMenu = () => {
+    setNotifOpen(false);
+    setMobileNavOpen(false);
+    setMenuOpen(!isMenuOpen);
+  };
+  const toggleNotification = () => {
+    setMenuOpen(false);
+    setMobileNavOpen(false);
+    setNotifOpen(!isNotifOpen);
+  };
+  const toggleMobileNav = () => {
+    setMenuOpen(false);
+    setNotifOpen(false);
+    setMobileNavOpen(!isMobileNavOpen);
+  };
 
   const { user, loading } = useUser();
 
@@ -86,8 +97,7 @@ export default function Header() {
             ? "backdrop-blur-xl bg-white/70 border-b border-white/30 shadow-sm shadow-black/5"
             : "backdrop-blur-md bg-white/40 border-b border-white/20"
         }`}
-        style={{ fontFamily: "'Raleway', sans-serif" }}
-      >
+        style={{ fontFamily: "'Raleway', sans-serif" }}>
         {/* Logo + Busca */}
         <div className="flex items-center gap-6 max-w-lg w-full">
           <Link href={isAuthenticated() ? "/home" : "/"}>
@@ -113,13 +123,23 @@ export default function Header() {
                 border: "1px solid rgba(255,255,255,0.40)",
                 borderRadius: "14px",
                 padding: "8px 16px",
-              }}
-            >
-              <Search size={16} className="text-gray-500 shrink-0" />
+              }}>
+              <Search
+                size={16}
+                className="text-gray-500 shrink-0"
+              />
               <input
                 type="text"
                 placeholder="Pesquisar desabafos..."
-                style={{ background: "transparent", outline: "none", width: "100%", fontSize: "0.875rem", fontFamily: "'Raleway', sans-serif", fontWeight: 400, color: "#1e1e1e" }}
+                style={{
+                  background: "transparent",
+                  outline: "none",
+                  width: "100%",
+                  fontSize: "0.875rem",
+                  fontFamily: "'Raleway', sans-serif",
+                  fontWeight: 400,
+                  color: "#1e1e1e",
+                }}
               />
             </motion.div>
           )}
@@ -129,8 +149,7 @@ export default function Header() {
         {isAuthenticated() && (
           <div
             ref={containerRef}
-            className="flex gap-4 relative w-full max-w-xs items-center justify-end"
-          >
+            className="flex gap-4 relative w-full max-w-xs items-center justify-end">
             {/* Sino */}
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -141,14 +160,16 @@ export default function Header() {
                 background: "rgba(255,255,255,0.65)",
                 backdropFilter: "blur(10px)",
                 border: "1px solid rgba(255,255,255,0.35)",
-              }}
-            >
+              }}>
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 flex justify-center items-center bg-secondary rounded-full animate-pulse text-white text-[10px] font-bold">
                   {unreadCount}
                 </span>
               )}
-              <Bell size={18} className="text-gray-700" />
+              <Bell
+                size={18}
+                className="text-gray-700"
+              />
             </motion.button>
 
             <AnimatePresence>
@@ -158,8 +179,7 @@ export default function Header() {
                   initial={{ opacity: 0, y: -8, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                  transition={{ duration: 0.18 }}
-                >
+                  transition={{ duration: 0.18 }}>
                   <NotificationModal setOpen={setNotifOpen} />
                 </motion.div>
               )}
@@ -170,8 +190,7 @@ export default function Header() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleMenu}
-              className="cursor-pointer ring-2 ring-white/60 rounded-full transition-all duration-200 hover:ring-secondary/40"
-            >
+              className="cursor-pointer ring-2 ring-white/60 rounded-full transition-all duration-200 hover:ring-secondary/40">
               {user?.profile_picture && (
                 <Image
                   src={getProfilePictureUrl(user.profile_picture)}
@@ -191,8 +210,7 @@ export default function Header() {
                   initial={{ opacity: 0, y: -8, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                  transition={{ duration: 0.18 }}
-                >
+                  transition={{ duration: 0.18 }}>
                   <Menu
                     setMenuClosed={setMenuOpen}
                     user={user}
@@ -206,12 +224,16 @@ export default function Header() {
 
         {/* Não autenticado: nav */}
         {!isAuthenticated() && (
-          <div ref={containerRef} className="relative">
+          <div
+            ref={containerRef}
+            className="relative">
             <button
               onClick={toggleMobileNav}
               className="hidden max-lg:flex p-2 text-gray-700 rounded-xl transition-colors cursor-pointer"
-              style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(255,255,255,0.35)" }}
-            >
+              style={{
+                background: "rgba(255,255,255,0.55)",
+                border: "1px solid rgba(255,255,255,0.35)",
+              }}>
               {isMobileNavOpen ? <X size={22} /> : <MenuIcon size={22} />}
             </button>
 
@@ -221,19 +243,21 @@ export default function Header() {
               max-lg:shadow-xl max-lg:border
               ${isMobileNavOpen ? "max-lg:block" : "max-lg:hidden"}
             `}
-              style={isMobileNavOpen ? {
-                background: "rgba(255,255,255,0.80)",
-                backdropFilter: "blur(20px)",
-                border: "1px solid rgba(255,255,255,0.40)",
-              } : {}}
-            >
+              style={
+                isMobileNavOpen
+                  ? {
+                      background: "rgba(255,255,255,0.80)",
+                      backdropFilter: "blur(20px)",
+                      border: "1px solid rgba(255,255,255,0.40)",
+                    }
+                  : {}
+              }>
               <ul className="flex gap-2 items-center max-lg:flex-col max-lg:items-stretch max-lg:gap-3">
                 <li className="w-full">
                   <Link
                     href="/login"
                     onClick={() => setMobileNavOpen(false)}
-                    className="btn-primary block text-center whitespace-nowrap text-sm"
-                  >
+                    className="btn-primary block text-center whitespace-nowrap text-sm">
                     Entrar na minha conta
                   </Link>
                 </li>
@@ -241,8 +265,7 @@ export default function Header() {
                   <Link
                     href="/register"
                     onClick={() => setMobileNavOpen(false)}
-                    className="btn-secondary block text-center whitespace-nowrap text-sm"
-                  >
+                    className="btn-secondary block text-center whitespace-nowrap text-sm">
                     Criar perfil anônimo grátis
                   </Link>
                 </li>

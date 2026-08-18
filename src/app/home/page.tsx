@@ -49,6 +49,7 @@ export default function Home() {
         setCharCount(0);
         setModalOpen(false);
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Erro ao criar post. Tente novamente.");
     } finally { setLoading(false); }

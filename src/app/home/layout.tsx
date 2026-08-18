@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Header from "../ui/Header";
-import Footer from "../ui/Footer";
 
 export const metadata: Metadata = {
   title: { default: "Feed", template: "%s | Anônimo Angola" },

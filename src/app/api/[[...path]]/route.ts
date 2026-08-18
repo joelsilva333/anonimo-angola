@@ -56,7 +56,8 @@ async function handleProxy(request: NextRequest, context: ProxyContext) {
           backendResponse.headers.get("Content-Type") || "application/json",
       },
     });
-  } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+  } catch (error: any) {
     return NextResponse.json(
       { error: "Erro de comunicação com o servidor proxy" },
       { status: 500 },
