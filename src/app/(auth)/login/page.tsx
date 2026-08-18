@@ -93,9 +93,18 @@ export default function Login() {
               className="w-full bg-white rounded-md px-4 py-2 outline-none"
             />
           </label>
-          {errors.password && (
-            <p className="text-red-500 text-sm">{errors.password.message}</p>
-          )}
+          <div className="flex justify-between items-center mt-1">
+            {errors.password ? (
+              <p className="text-red-500 text-sm">{errors.password.message}</p>
+            ) : (
+              <span />
+            )}
+            <Link
+              href="/forgot-password"
+              className="text-xs text-primary hover:underline">
+              Esqueceu a senha?
+            </Link>
+          </div>
         </div>
 
         <div className="flex flex-col w-full">
@@ -133,8 +142,6 @@ export default function Login() {
 			>
 				Entrar como anônimo visitante
 			</button> */}
-
-      
     </div>
   );
 }
