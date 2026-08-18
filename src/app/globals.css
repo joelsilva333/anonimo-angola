@@ -1,126 +1,147 @@
-@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
 @theme {
-    /* Paleta original preservada + tokens modernos */
-    --color-primary: #1e1e1e;
-    --color-secondary: #85cc84;
-    --color-secondary-hover: #6db86c;
-    --color-background: #f0f2f0;
-    --color-background-secondary: #e4e9e4;
+  --color-primary: #1e1e1e;
+  --color-secondary: #85cc84;
+  --color-secondary-hover: #6db86c;
+  --color-background: #f0f2f0;
+  --color-background-secondary: #e4e9e4;
 
-    /* Glass tokens */
-    --color-glass: rgba(255,255,255,0.55);
-    --color-glass-dark: rgba(30,30,30,0.65);
-    --color-glass-border: rgba(255,255,255,0.25);
-    --color-glass-border-dark: rgba(255,255,255,0.12);
+  --color-glass: rgba(255, 255, 255, 0.55);
+  --color-glass-dark: rgba(30, 30, 30, 0.65);
+  --color-glass-border: rgba(255, 255, 255, 0.25);
+  --color-glass-border-dark: rgba(255, 255, 255, 0.12);
 }
 
-/* ── Tipografia Global ── */
-*, *::before, *::after {
-    font-family: 'Raleway', sans-serif;
+*,
+*::before,
+*::after {
+  font-family: "Raleway", sans-serif;
 }
 
 html {
-    scroll-behavior: smooth;
+  scroll-behavior: smooth;
 }
 
 body {
-    background: #f0f2f0;
-    background-image:
-        radial-gradient(ellipse 80% 60% at 20% -10%, rgba(133,204,132,0.18) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 80% 110%, rgba(133,204,132,0.12) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(133,204,132,0.06) 0%, transparent 70%);
-    background-attachment: fixed;
-    min-height: 100vh;
+  background: #f0f2f0;
+  background-image:
+    radial-gradient(
+      ellipse 80% 60% at 20% -10%,
+      rgba(133, 204, 132, 0.18) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 80% 110%,
+      rgba(133, 204, 132, 0.12) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 40% 40% at 50% 50%,
+      rgba(133, 204, 132, 0.06) 0%,
+      transparent 70%
+    );
+  background-attachment: fixed;
+  min-height: 100vh;
 }
 
 /* ── Botões ── */
 .btn-primary {
-    @apply bg-secondary text-white font-semibold flex border border-secondary-hover
+  @apply bg-secondary text-white font-semibold flex border border-secondary-hover
            justify-center items-center
            rounded-2xl transition-all duration-300 ease-out cursor-pointer
            w-full px-6 py-2.5 shadow-sm
            hover:bg-secondary-hover hover:scale-[1.02] hover:shadow-md active:scale-[0.98];
-    font-family: 'Raleway', sans-serif;
-    letter-spacing: 0.02em;
+  font-family: "Raleway", sans-serif;
+  letter-spacing: 0.02em;
 }
 
 .btn-secondary {
-    @apply border border-primary/25 text-primary font-medium
+  @apply border border-primary/25 text-primary font-medium
            flex justify-center items-center rounded-2xl transition-all
            duration-300 ease-out cursor-pointer w-full px-6 py-2.5
            bg-white/60 backdrop-blur-sm
            hover:bg-white/90 hover:scale-[1.02] hover:shadow-sm active:scale-[0.98];
-    font-family: 'Raleway', sans-serif;
-    letter-spacing: 0.02em;
+  font-family: "Raleway", sans-serif;
+  letter-spacing: 0.02em;
 }
 
 .btn-warning {
-    @apply bg-red-500 text-white font-semibold flex border border-red-400
+  @apply bg-red-500 text-white font-semibold flex border border-red-400
            justify-center items-center rounded-2xl transition-all duration-300 ease-out
            cursor-pointer w-full px-6 py-2.5 shadow-sm hover:bg-red-600 hover:scale-[1.02] active:scale-[0.98];
-    font-family: 'Raleway', sans-serif;
+  font-family: "Raleway", sans-serif;
 }
 
-/* ── Glass Card ── */
 .card {
-    @apply p-6 rounded-3xl transition-all duration-300;
-    background: rgba(255,255,255,0.62);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,0.35);
-    box-shadow: 0 4px 24px rgba(30,30,30,0.06), 0 1px 4px rgba(30,30,30,0.04);
+  @apply p-6 rounded-3xl transition-all duration-300;
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 4px 24px rgba(30, 30, 30, 0.06),
+    0 1px 4px rgba(30, 30, 30, 0.04);
 }
 
 .card:hover {
-    background: rgba(255,255,255,0.78);
-    box-shadow: 0 8px 32px rgba(30,30,30,0.10), 0 2px 8px rgba(30,30,30,0.06);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 8px 32px rgba(30, 30, 30, 0.1),
+    0 2px 8px rgba(30, 30, 30, 0.06);
 }
 
-/* ── Glass Input ── */
 .glass-input {
-    background: rgba(255,255,255,0.55);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.40);
-    border-radius: 14px;
-    padding: 10px 16px;
-    outline: none;
-    width: 100%;
-    font-family: 'Raleway', sans-serif;
-    font-weight: 400;
-    color: #1e1e1e;
-    transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 14px;
+  padding: 10px 16px;
+  outline: none;
+  width: 100%;
+  font-family: "Raleway", sans-serif;
+  font-weight: 400;
+  color: #1e1e1e;
+  transition: all 0.25s ease;
 }
 
 .glass-input:focus {
-    background: rgba(255,255,255,0.80);
-    border-color: rgba(133,204,132,0.60);
-    box-shadow: 0 0 0 3px rgba(133,204,132,0.14);
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(133, 204, 132, 0.6);
+  box-shadow: 0 0 0 3px rgba(133, 204, 132, 0.14);
 }
 
 .glass-input::placeholder {
-    color: rgba(30,30,30,0.38);
+  color: rgba(30, 30, 30, 0.38);
 }
 
-/* ── Tag ── */
 .tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 10px;
-    border-radius: 9999px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    background: rgba(133,204,132,0.14);
-    color: #3d9c3c;
-    border: 1px solid rgba(133,204,132,0.30);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: rgba(133, 204, 132, 0.14);
+  color: #3d9c3c;
+  border: 1px solid rgba(133, 204, 132, 0.3);
 }
 
 /* ── Scrollbar sutil ── */
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(133,204,132,0.35); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(133,204,132,0.6); }
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(133, 204, 132, 0.35);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(133, 204, 132, 0.6);
+}

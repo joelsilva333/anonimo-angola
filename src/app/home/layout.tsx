@@ -7,9 +7,17 @@ export const metadata: Metadata = {
   description: "O seu feed personalizado de desabafos anônimos.",
 };
 
-export default function HomeLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function HomeLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Raleway', sans-serif" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        fontFamily: "'Raleway', sans-serif",
+      }}>
       <Header />
 
       <div
@@ -17,8 +25,7 @@ export default function HomeLayout({ children }: Readonly<{ children: React.Reac
         style={{
           background: "linear-gradient(160deg, #f0f2f0 0%, #e8f0e8 100%)",
           backgroundAttachment: "fixed",
-        }}
-      >
+        }}>
         {/* Glow suave de fundo */}
         <div
           style={{
@@ -28,7 +35,8 @@ export default function HomeLayout({ children }: Readonly<{ children: React.Reac
             transform: "translateX(-50%)",
             width: "700px",
             height: "400px",
-            background: "radial-gradient(ellipse, rgba(133,204,132,0.12) 0%, transparent 68%)",
+            background:
+              "radial-gradient(ellipse, rgba(133,204,132,0.12) 0%, transparent 68%)",
             pointerEvents: "none",
             zIndex: 0,
           }}
@@ -38,7 +46,7 @@ export default function HomeLayout({ children }: Readonly<{ children: React.Reac
           {children}
         </div>
       </div>
-{/* 
+      {/* 
       <Footer /> */}
     </div>
   );

@@ -81,7 +81,7 @@ export default function Header() {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className={`w-full px-10 py-3 max-lg:px-5 flex items-center justify-between sticky top-0 z-50 transition-all duration-300 ${
+        className={`w-full px-10 py-3 max-lg:px-5 flex items-center justify-between sticky top-0 z-40 transition-all duration-300 ${
           scrolled
             ? "backdrop-blur-xl bg-white/70 border-b border-white/30 shadow-sm shadow-black/5"
             : "backdrop-blur-md bg-white/40 border-b border-white/20"
