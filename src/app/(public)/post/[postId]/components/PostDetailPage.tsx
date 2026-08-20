@@ -60,6 +60,7 @@ export default function PostDetailPageClient({ postId }: { postId: string }) {
         <Post
           post={post}
           refetch={refetch}
+          showSimilar
         />
       </main>
     </motion.div>

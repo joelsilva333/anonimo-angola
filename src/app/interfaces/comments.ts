@@ -30,4 +30,6 @@ export interface PostCommentInterface {
   reaction_type: "like" | "dislike" | null;
   status: "active" | "flagged" | "deleted";
   answers: AnswerInterface[];
+  /** Marca este comentário como a primeira resposta gerada automaticamente pela IA (Gemini). */
+  is_ai_welcome?: boolean;
 }

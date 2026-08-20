@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Sparkles, PenLine } from "lucide-react";
+import { X, Sparkles, PenLine, ShieldAlert } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -35,6 +35,7 @@ export default function Home() {
   const { posts, refetch } = useGetPosts();
   const { sponsors } = useGetSponsors();
   const [charCount, setCharCount] = useState(0);
+  const [moderationAlert, setModerationAlert] = useState<string | null>(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>();
 
@@ -51,7 +52,15 @@ export default function Home() {
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Erro ao criar post. Tente novamente.");
+      // Moderação e análise de segurança em tempo real (IA): conteúdo impedido de ser publicado.
+      if (error?.response?.data?.code === "MODERATION_BLOCKED") {
+        setModerationAlert(
+          error.response.data.error ||
+            "Este desabafo não pode ser publicado por violar as regras de segurança da comunidade.",
+        );
+        return;
+      }
+      toast.error(error?.response?.data?.error || "Erro ao criar post. Tente novamente.");
     } finally { setLoading(false); }
   };
 
@@ -240,6 +249,61 @@ export default function Home() {
                 ) : "Partilhar Desabafo"}
               </motion.button>
             </motion.form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal: Alerta amigável de moderação (IA) */}
+      <AnimatePresence>
+        {moderationAlert && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex justify-center items-center p-4"
+            style={{ background: "rgba(0,0,0,0.35)", backdropFilter: "blur(12px)" }}
+          >
+            <motion.div
+              initial={{ scale: 0.93, opacity: 0, y: 16 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.93, opacity: 0, y: 16 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="max-w-sm w-full flex flex-col text-center items-center p-8"
+              style={{
+                background: "rgba(255,255,255,0.90)",
+                backdropFilter: "blur(24px)",
+                border: "1px solid rgba(255,255,255,0.55)",
+                borderRadius: "28px",
+                boxShadow: "0 24px 64px rgba(30,30,30,0.20)",
+                fontFamily: "'Raleway', sans-serif",
+              }}
+            >
+              <div
+                className="p-4 rounded-3xl mb-3 flex items-center justify-center"
+                style={{ background: "rgba(239,68,68,0.12)", color: "#ef4444" }}
+              >
+                <ShieldAlert size={32} />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                Não conseguimos publicar este desabafo
+              </h3>
+              <p className="text-sm text-gray-500 leading-relaxed mb-6">
+                {moderationAlert}
+              </p>
+              <p className="text-xs text-gray-400 mb-6">
+                Este é um espaço de acolhimento para todos — por isso não permitimos discurso de
+                ódio ou partilha de dados pessoais de terceiros. Podes editar o teu texto e tentar
+                novamente.
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setModerationAlert(null)}
+                className="btn-primary"
+              >
+                Entendi, vou rever o texto
+              </motion.button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

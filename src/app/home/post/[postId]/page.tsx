@@ -70,6 +70,7 @@ export default function PostDetailPage({
         <Post
           post={post}
           refetch={refetch}
+          showSimilar
         />
       </main>
     </motion.div>

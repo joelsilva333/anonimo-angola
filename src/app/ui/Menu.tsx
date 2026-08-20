@@ -1,5 +1,5 @@
 import UserInterface from "@/app/interfaces/user";
-import { MoveRight, Settings, HeartHandshake, LogOut, User } from "lucide-react";
+import { MoveRight, Settings, HeartHandshake, LogOut, User, BookHeart } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
@@ -37,6 +37,11 @@ export default function Menu({
       title: "Apoio Emocional",
       icon: <HeartHandshake size={16} className="text-secondary" />,
       onClick: () => handleMenuClick("/home/support"),
+    },
+    {
+      title: "Diário Emocional",
+      icon: <BookHeart size={16} className="text-secondary" />,
+      onClick: () => handleMenuClick("/home/mood-tracker"),
     },
     {
       title: "Definições",

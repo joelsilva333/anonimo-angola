@@ -14,6 +14,9 @@ import TimeAgo from "react-timeago";
 import { customFormatter } from "@/app/utils/customFormatter";
 import { SubmitHandler, useForm } from "react-hook-form";
 import Comment from "./Comment";
+import AiWelcomeComment from "./AiWelcomeComment";
+import CrisisSupportBanner from "./CrisisSupportBanner";
+import SimilarPosts from "./SimilarPosts";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -46,9 +49,11 @@ const glassCard = {
 export default function Post({
   post,
   refetch,
+  showSimilar = false,
 }: {
   post: PostInterface;
   refetch: (options?: any) => void;
+  showSimilar?: boolean;
 }) {
   const { register, handleSubmit, reset, setFocus } = useForm<CommentInput>();
   const router = useRouter();
@@ -77,9 +82,11 @@ export default function Post({
   };
 
   const INITIAL_COMMENTS_LIMIT = 2;
+  const aiWelcomeComments = comments.filter((c) => c.is_ai_welcome);
+  const normalComments = comments.filter((c) => !c.is_ai_welcome);
   const displayedComments = showAll
-    ? comments
-    : comments.slice(0, INITIAL_COMMENTS_LIMIT);
+    ? normalComments
+    : normalComments.slice(0, INITIAL_COMMENTS_LIMIT);
 
   const onSubmit: SubmitHandler<CommentInput> = async (data) => {
     try {
@@ -216,6 +223,9 @@ export default function Post({
           </p>
         )}
 
+        {/* Banner de acolhimento em caso de crise emocional detectada pela IA */}
+        {post.ai_crisis_detected && <CrisisSupportBanner />}
+
         <div className="flex flex-col gap-2">
           <div style={{ height: 1, background: "rgba(0,0,0,0.06)" }} />
           <ul
@@ -251,9 +261,9 @@ export default function Post({
                 className="flex w-full justify-center py-2 rounded-xl hover:bg-black/5 transition-all duration-200 items-center gap-2 cursor-pointer text-sm font-medium text-gray-600">
                 <MessageCircle size={17} />
                 <span className="max-lg:hidden">Comentar</span>
-                {comments.length > 0 && (
+                {normalComments.length > 0 && (
                   <span className="text-xs text-gray-400 ml-0.5">
-                    ({comments.length})
+                    ({normalComments.length})
                   </span>
                 )}
               </motion.button>
@@ -275,6 +285,14 @@ export default function Post({
 
         {/* Comentários */}
         <div className="flex flex-col gap-3">
+          {aiWelcomeComments.length > 0 && (
+            <ul className="flex flex-col gap-2">
+              {aiWelcomeComments.map((comment) => (
+                <AiWelcomeComment key={comment.id} comment={comment} />
+              ))}
+            </ul>
+          )}
+
           {displayedComments.length > 0 ? (
             <ul className="flex flex-col gap-2">
               {displayedComments.map((comment) => (
@@ -286,23 +304,25 @@ export default function Post({
               ))}
             </ul>
           ) : (
-            <p
-              className="text-sm text-center text-gray-400 py-2"
-              style={{ fontFamily: "'Raleway', sans-serif" }}>
-              Seja o primeiro a comentar!
-            </p>
+            aiWelcomeComments.length === 0 && (
+              <p
+                className="text-sm text-center text-gray-400 py-2"
+                style={{ fontFamily: "'Raleway', sans-serif" }}>
+                Seja o primeiro a comentar!
+              </p>
+            )
           )}
 
-          {!showAll && comments.length > INITIAL_COMMENTS_LIMIT && (
+          {!showAll && normalComments.length > INITIAL_COMMENTS_LIMIT && (
             <button
               type="button"
               className="text-xs text-secondary font-semibold cursor-pointer hover:underline self-start"
               style={{ fontFamily: "'Raleway', sans-serif" }}
               onClick={() => setShowAll(true)}>
-              Ver mais comentários ({comments.length - INITIAL_COMMENTS_LIMIT})
+              Ver mais comentários ({normalComments.length - INITIAL_COMMENTS_LIMIT})
             </button>
           )}
-          {showAll && comments.length > INITIAL_COMMENTS_LIMIT && (
+          {showAll && normalComments.length > INITIAL_COMMENTS_LIMIT && (
             <button
               type="button"
               className="text-xs text-gray-400 font-semibold cursor-pointer hover:underline self-start"
@@ -349,6 +369,9 @@ export default function Post({
           </form>
         )}
       </motion.div>
+
+      {/* Relatos semelhantes que podes querer ler (matching por afinidade IA) */}
+      {showSimilar && <SimilarPosts postId={post.id} />}
 
       {/* Modal: Precisa de login */}
       <AnimatePresence>
