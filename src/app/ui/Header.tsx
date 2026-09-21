@@ -202,17 +202,17 @@ export default function Header() {
           )}
         </div>
 
-        {/* Autenticado: sino + avatar */}
+        {/* Autenticado: sino + avatar (desktop) / só avatar (mobile) */}
         {isAuthenticated() && (
           <div
             ref={containerRef}
-            className="flex gap-4 relative w-full max-w-xs items-center justify-end">
-            {/* Painel admin — só visível para administradores */}
+            className="flex gap-3 max-lg:gap-2 relative w-full max-w-xs items-center justify-end">
+            {/* Painel admin — só visível para administradores, e só a partir de "lg" (no mobile fica dentro do menu do avatar) */}
             {user?.role === "admin" && (
               <Link
                 href="/admin"
                 title="Painel administrativo"
-                className="p-2 rounded-full relative cursor-pointer transition-all duration-200"
+                className="max-lg:hidden p-2 rounded-full relative cursor-pointer transition-all duration-200"
                 style={{
                   background: "rgba(255,255,255,0.65)",
                   backdropFilter: "blur(10px)",
@@ -222,12 +222,12 @@ export default function Header() {
               </Link>
             )}
 
-            {/* Sino */}
+            {/* Sino — só a partir de "lg" (no mobile fica dentro do menu do avatar) */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleNotification}
-              className="p-2 rounded-full relative cursor-pointer transition-all duration-200"
+              className="max-lg:hidden p-2 rounded-full relative cursor-pointer transition-all duration-200"
               style={{
                 background: "rgba(255,255,255,0.65)",
                 backdropFilter: "blur(10px)",
@@ -244,14 +244,14 @@ export default function Header() {
               />
             </motion.button>
 
-            {/* Mensagens */}
+            {/* Mensagens — só a partir de "lg" (no mobile fica dentro do menu do avatar) */}
             <Link
               href="/home/messages"
               onClick={() => {
                 setMenuOpen(false);
                 setNotifOpen(false);
               }}
-              className="p-2 rounded-full relative cursor-pointer transition-all duration-200"
+              className="max-lg:hidden p-2 rounded-full relative cursor-pointer transition-all duration-200"
               style={{
                 background: "rgba(255,255,255,0.65)",
                 backdropFilter: "blur(10px)",
@@ -281,12 +281,16 @@ export default function Header() {
               )}
             </AnimatePresence>
 
-            {/* Avatar */}
+            {/* Avatar — no mobile é o único botão visível; o menu que abre já
+                inclui Painel Admin, Notificações e Mensagens (com contadores). */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleMenu}
-              className="cursor-pointer ring-2 ring-white/60 rounded-full transition-all duration-200 hover:ring-secondary/40">
+              className="relative cursor-pointer ring-2 ring-white/60 rounded-full transition-all duration-200 hover:ring-secondary/40 shrink-0">
+              {(unreadCount > 0 || messageUnreadCount > 0) && (
+                <span className="lg:hidden absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-secondary border-2 border-white animate-pulse z-10" />
+              )}
               {user?.profile_picture && (
                 <Image
                   src={getProfilePictureUrl(user.profile_picture)}
@@ -311,6 +315,8 @@ export default function Header() {
                     setMenuClosed={setMenuOpen}
                     user={user}
                     loading={loading}
+                    unreadNotifications={unreadCount}
+                    unreadMessages={messageUnreadCount}
                   />
                 </motion.div>
               )}

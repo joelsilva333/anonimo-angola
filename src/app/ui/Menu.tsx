@@ -1,5 +1,15 @@
 import UserInterface from "@/app/interfaces/user";
-import { MoveRight, Settings, HeartHandshake, LogOut, User, BookHeart } from "lucide-react";
+import {
+  MoveRight,
+  Settings,
+  HeartHandshake,
+  LogOut,
+  User,
+  BookHeart,
+  Bell,
+  MessageCircle,
+  ShieldCheck,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
@@ -9,16 +19,21 @@ import { getProfilePictureUrl } from "../utils/getProfilePicture";
 interface MenuInterface {
   title: string;
   icon: React.ReactNode;
+  badge?: number;
   onClick?: () => void;
 }
 
 export default function Menu({
   setMenuClosed,
   user,
+  unreadNotifications = 0,
+  unreadMessages = 0,
 }: {
   setMenuClosed: Dispatch<SetStateAction<boolean>>;
   user: UserInterface | null;
   loading: boolean;
+  unreadNotifications?: number;
+  unreadMessages?: number;
 }) {
   const router = useRouter();
   const cookies = new Cookies();
@@ -33,6 +48,27 @@ export default function Menu({
   const handleMenuClick = (link: string) => { router.push(link); setMenuClosed(false); };
 
   const menuItems: MenuInterface[] = [
+    ...(user?.role === "admin"
+      ? [
+          {
+            title: "Painel Administrativo",
+            icon: <ShieldCheck size={16} className="text-purple-500" />,
+            onClick: () => handleMenuClick("/admin"),
+          },
+        ]
+      : []),
+    {
+      title: "Notificações",
+      icon: <Bell size={16} className="text-secondary" />,
+      badge: unreadNotifications,
+      onClick: () => handleMenuClick("/home/notifications"),
+    },
+    {
+      title: "Mensagens",
+      icon: <MessageCircle size={16} className="text-secondary" />,
+      badge: unreadMessages,
+      onClick: () => handleMenuClick("/home/messages"),
+    },
     {
       title: "Apoio Emocional",
       icon: <HeartHandshake size={16} className="text-secondary" />,
@@ -96,6 +132,11 @@ export default function Menu({
             <span className="flex items-center gap-2.5 text-sm font-medium text-gray-700">
               {item.icon}
               {item.title}
+              {!!item.badge && (
+                <span className="min-w-4.5 h-4.5 px-1 flex items-center justify-center bg-secondary rounded-full text-white text-[10px] font-bold">
+                  {item.badge}
+                </span>
+              )}
             </span>
             <MoveRight size={14} className="text-gray-400" />
           </button>
