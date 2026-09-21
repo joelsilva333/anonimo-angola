@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import AuthLeftSlider from "./ui/AuthLeftSlider";
-import { ToastContainer } from "react-toastify";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -51,7 +50,6 @@ export default function AuthLayout({
         style={{
           background: "linear-gradient(135deg, #f0f2f0 0%, #e8f0e8 100%)",
         }}>
-        <ToastContainer theme="colored" />
         <div
           style={{
             position: "absolute",

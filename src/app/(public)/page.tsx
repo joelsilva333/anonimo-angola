@@ -6,7 +6,7 @@ import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { api } from "../api/config";
 import { useUser } from "../hooks/user";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { useGetPosts } from "../hooks/post";
 import { motion, AnimatePresence } from "framer-motion";
 import Post from "../ui/Post";
@@ -77,7 +77,6 @@ export default function Home() {
 
   return (
     <>
-      <ToastContainer theme="colored" />
 
       {/* ── Hero Section ── */}
       <motion.section

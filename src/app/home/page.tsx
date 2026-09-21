@@ -6,7 +6,7 @@ import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { api } from "../api/config";
 import { useUser } from "../hooks/user";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import Post from "../ui/Post";
 import SponsorBanner from "../ui/SponsorBanner";
 import { PostSkeletonList } from "../ui/PostSkeleton";
@@ -99,7 +99,6 @@ export default function Home() {
 
   return (
     <>
-      <ToastContainer theme="colored" />
 
       <PhoneRecoveryBanner />
 
