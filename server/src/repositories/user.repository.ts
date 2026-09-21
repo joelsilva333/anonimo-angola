@@ -107,4 +107,8 @@ export class UserRepository {
       .where("user.created_at >= :since", { since })
       .getCount();
   }
+
+  async findAdmins(): Promise<User[]> {
+    return this.userRepository.find({ where: { role: "admin" } });
+  }
 }

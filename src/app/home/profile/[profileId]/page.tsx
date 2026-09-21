@@ -54,7 +54,7 @@ export default function ProfilePage() {
 
   return (
     <>
-      <div className="w-full flex items-center gap-8 bg-gradient-to-r from-[#4B6D94] to-[#10192B] p-8 max-lg:gap-4 max-lg:p-4 max-lg:min-h-44">
+      <div className="w-full flex items-center gap-8 bg-gradient-to-r from-[#4B6D94] to-[#10192B] p-8 max-lg:gap-4 max-lg:p-4 max-sm:flex-col max-sm:text-center max-sm:py-6">
         {profilePicture ? (
           <Image
             src={getProfilePictureUrl(profilePicture)}
@@ -73,13 +73,13 @@ export default function ProfilePage() {
           </span>
         )}
 
-        <div className="flex flex-col gap-3">
-          <h1 className="font-semibold text-2xl text-white max-lg:text-xl">
+        <div className="flex flex-col gap-3 max-sm:items-center min-w-0">
+          <h1 className="font-semibold text-2xl text-white max-lg:text-xl truncate max-w-full">
             {anonName}
           </h1>
 
           {!profileLoading && profile && (
-            <div className="flex items-center gap-4 text-sm text-white/80">
+            <div className="flex items-center gap-4 text-sm text-white/80 flex-wrap justify-center">
               <span>
                 <strong className="text-white">{posts.length}</strong> desabafos
               </span>

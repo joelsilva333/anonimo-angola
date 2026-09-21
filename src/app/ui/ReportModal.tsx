@@ -24,7 +24,7 @@ export default function ReportModal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  targetType: "post" | "comment" | "answer";
+  targetType: "post" | "comment" | "answer" | "message";
   targetId: string;
 }) {
   const [reason, setReason] = useState("");

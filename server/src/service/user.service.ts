@@ -216,6 +216,21 @@ export class UserService {
         throw new Error("A palavra-passe deve ter pelo menos 8 caracteres");
       }
 
+      // Quem está a mudar a própria palavra-passe tem de confirmar a actual
+      // (um admin a repor a palavra-passe de outra conta não precisa).
+      if (isOwner && !isAdmin) {
+        if (!input.current_password) {
+          throw new Error("Indica a palavra-passe actual para a poderes alterar");
+        }
+        const currentMatches = await bcrypt.compare(
+          input.current_password,
+          user.password_hash,
+        );
+        if (!currentMatches) {
+          throw new Error("A palavra-passe actual está incorrecta");
+        }
+      }
+
       const isSamePassword = await bcrypt.compare(
         input.password_hash,
         user.password_hash,
@@ -251,6 +266,13 @@ export class UserService {
 
     if (isAdmin && input.is_active !== undefined) {
       user.is_active = input.is_active;
+    }
+
+    if (isOwner) {
+      if (input.notify_likes !== undefined) user.notify_likes = input.notify_likes;
+      if (input.notify_comments !== undefined) user.notify_comments = input.notify_comments;
+      if (input.notify_follows !== undefined) user.notify_follows = input.notify_follows;
+      if (input.notify_messages !== undefined) user.notify_messages = input.notify_messages;
     }
 
     const updatedUser = await this.userRepository.update(user);

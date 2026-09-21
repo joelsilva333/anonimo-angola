@@ -15,7 +15,7 @@ const router = Router();
  * @swagger
  * /reports/{targetType}/{targetId}:
  *   post:
- *     summary: Denunciar um desabafo, comentário ou resposta
+ *     summary: Denunciar um desabafo, comentário, resposta ou mensagem privada
  *     tags:
  *       - Reports
  *     security:
@@ -26,7 +26,7 @@ const router = Router();
  *         required: true
  *         schema:
  *           type: string
- *           enum: [post, comment, answer]
+ *           enum: [post, comment, answer, message]
  *       - in: path
  *         name: targetId
  *         required: true

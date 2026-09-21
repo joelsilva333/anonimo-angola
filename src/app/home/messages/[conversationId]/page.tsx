@@ -6,11 +6,12 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Send, ShieldAlert, Flag } from "lucide-react";
 import { toast } from "react-toastify";
 import { useConversations, useMessages } from "@/app/hooks/use-messages";
 import { useUser } from "@/app/hooks/user";
 import { getProfilePictureUrl } from "@/app/utils/getProfilePicture";
+import ReportModal from "@/app/ui/ReportModal";
 
 export default function ConversationPage() {
   const { conversationId } = useParams<{ conversationId: string }>();
@@ -22,6 +23,7 @@ export default function ConversationPage() {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
+  const [reportTargetId, setReportTargetId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const conversation = conversations.find((c) => c.id === conversationId);
@@ -123,7 +125,15 @@ export default function ConversationPage() {
                 key={message.id}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+                className={`group flex items-center gap-1.5 ${isMine ? "justify-end" : "justify-start"}`}>
+                {!isMine && (
+                  <button
+                    onClick={() => setReportTargetId(message.id)}
+                    title="Denunciar mensagem"
+                    className="p-1.5 rounded-full text-gray-300 hover:text-red-500 hover:bg-red-50 opacity-60 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-200 cursor-pointer shrink-0">
+                    <Flag size={13} />
+                  </button>
+                )}
                 <div
                   className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                     isMine
@@ -224,6 +234,13 @@ export default function ConversationPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ReportModal
+        isOpen={!!reportTargetId}
+        onClose={() => setReportTargetId(null)}
+        targetType="message"
+        targetId={reportTargetId || ""}
+      />
     </div>
   );
 }

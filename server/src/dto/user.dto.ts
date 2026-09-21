@@ -88,6 +88,11 @@ export class UpdateUserDTO {
   @MaxLength(60)
   password_hash!: string;
 
+  /** Obrigatória quando o próprio utilizador (não admin) muda a sua palavra-passe. */
+  @IsOptional()
+  @IsString()
+  current_password?: string;
+
   @IsOptional()
   @IsBoolean()
   is_active?: boolean;
@@ -96,4 +101,20 @@ export class UpdateUserDTO {
   @IsString()
   @MaxLength(15)
   phone_number?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  notify_likes?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  notify_comments?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  notify_follows?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  notify_messages?: boolean;
 }

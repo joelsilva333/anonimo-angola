@@ -5,6 +5,8 @@ import {
 } from "../repositories/support.repository";
 import { MessageRole } from "../entities/support-message.entity";
 import { SupportMessageItemDTO } from "../dto/support.dto";
+import { NotificationService } from "./notification.service";
+import { NotificationType, TargetType } from "../entities/notification.entity";
 
 const MAX_HISTORY_MESSAGES = 20;
 
@@ -70,10 +72,12 @@ function checkRateLimit(userId: string): boolean {
 export class SupportService {
   private conversationRepo: SupportConversationRepository;
   private messageRepo: SupportMessageRepository;
+  private notificationService: NotificationService;
 
   constructor() {
     this.conversationRepo = new SupportConversationRepository();
     this.messageRepo = new SupportMessageRepository();
+    this.notificationService = new NotificationService();
   }
 
   async sendMessage(
@@ -121,6 +125,12 @@ export class SupportService {
         },
       ]);
       await this.conversationRepo.touch(conversation.id);
+
+      await this.notificationService.notifyAdmins(
+        NotificationType.ADMIN_CRISIS,
+        TargetType.SUPPORT_CONVERSATION,
+        conversation.id,
+      );
 
       res.setHeader("Content-Type", "text/plain; charset=utf-8");
       res.setHeader("Transfer-Encoding", "chunked");

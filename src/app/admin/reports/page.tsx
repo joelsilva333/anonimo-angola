@@ -108,7 +108,7 @@ export default function AdminReportsPage() {
               </div>
 
               {status === "pending" && (
-                <div className="flex items-center justify-between gap-3 pt-1">
+                <div className="flex items-center justify-between gap-3 pt-1 flex-wrap">
                   <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
                     <input
                       type="checkbox"

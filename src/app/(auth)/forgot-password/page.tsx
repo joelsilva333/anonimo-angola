@@ -127,7 +127,7 @@ export default function ForgotPassword() {
     <div
       className="w-full p-8 max-lg:px-6 max-lg:py-6"
       style={{ fontFamily: "'Raleway', sans-serif" }}>
-      <div id="recaptcha-container" className="absolute bottom-20 right-20" />
+      <div id="recaptcha-container" />
 
       {step === "PHONE" ? (
         <form

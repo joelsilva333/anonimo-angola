@@ -2,6 +2,8 @@ import { ModerationViolationRepository } from "../repositories/moderation-violat
 import { UserRepository } from "../repositories/user.repository";
 import { ViolationContentType } from "../entities/moderation-violation.entity";
 import { ModerationCategory } from "./ai.service";
+import { NotificationService } from "./notification.service";
+import { NotificationType, TargetType } from "../entities/notification.entity";
 
 /** Limiar de violações antes de suspender a conta automaticamente. */
 const VIOLATION_THRESHOLD = 3;
@@ -11,10 +13,12 @@ const VIOLATION_WINDOW_DAYS = 7;
 export class ModerationService {
   private violationRepository: ModerationViolationRepository;
   private userRepository: UserRepository;
+  private notificationService: NotificationService;
 
   constructor() {
     this.violationRepository = new ModerationViolationRepository();
     this.userRepository = new UserRepository();
+    this.notificationService = new NotificationService();
   }
 
   /**
@@ -46,6 +50,12 @@ export class ModerationService {
           user.banned_reason = `Suspensão automática: ${count} conteúdos bloqueados pela IA (moderação de segurança) em ${VIOLATION_WINDOW_DAYS} dias.`;
           user.banned_at = new Date();
           await this.userRepository.update(user);
+
+          await this.notificationService.notifyAdmins(
+            NotificationType.ADMIN_BAN,
+            TargetType.USER,
+            userId,
+          );
         }
       }
     } catch (err) {

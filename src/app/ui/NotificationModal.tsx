@@ -7,6 +7,9 @@ import {
   ExternalLink,
   CheckCheck,
   UserPlus,
+  Flag,
+  ShieldAlert,
+  AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import useGetNotifications from "../hooks/get-notifications";
@@ -142,55 +145,80 @@ export default function NotificationModal({ setOpen }: NotificationModalProps) {
             Nenhum alerta recente.
           </p>
         ) : (
-          notifications.map((notif) => (
-            <Link
-              key={notif.id}
-              href={
-                notif.type === "FOLLOW"
-                  ? `/home/profile/${notif.senderId}`
-                  : notif.targetType === "POST"
-                    ? `/home/post/${notif.targetId}`
-                    : "#"
-              }
-              onClick={() => handleMarkAsRead(notif.id)}
-              className={`flex items-center justify-between p-2.5 rounded-xl transition gap-2 w-full ${
-                !notif.isRead
-                  ? "bg-secondary/10 hover:bg-secondary/20"
-                  : "bg-gray-50 hover:bg-gray-100/80"
-              }`}>
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="p-1.5 rounded-full bg-secondary/10 text-secondary shrink-0">
-                  {notif.type === "LIKE" ? (
-                    <Heart
-                      size={14}
-                      fill="currentColor"
-                    />
-                  ) : notif.type === "FOLLOW" ? (
-                    <UserPlus size={14} />
-                  ) : (
-                    <MessageCircle size={14} />
+          notifications.map((notif) => {
+            const isAdminAlert = notif.type.startsWith("ADMIN_");
+            const href = isAdminAlert
+              ? notif.type === "ADMIN_REPORT"
+                ? "/admin/reports"
+                : notif.type === "ADMIN_BAN"
+                  ? "/admin/users"
+                  : "/admin/support"
+              : notif.type === "FOLLOW"
+                ? `/home/profile/${notif.senderId}`
+                : notif.targetType === "POST"
+                  ? `/home/post/${notif.targetId}`
+                  : "#";
+
+            return (
+              <Link
+                key={notif.id}
+                href={href}
+                onClick={() => handleMarkAsRead(notif.id)}
+                className={`flex items-center justify-between p-2.5 rounded-xl transition gap-2 w-full ${
+                  !notif.isRead
+                    ? "bg-secondary/10 hover:bg-secondary/20"
+                    : "bg-gray-50 hover:bg-gray-100/80"
+                }`}>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div
+                    className={`p-1.5 rounded-full shrink-0 ${
+                      isAdminAlert ? "bg-red-50 text-red-500" : "bg-secondary/10 text-secondary"
+                    }`}>
+                    {notif.type === "LIKE" ? (
+                      <Heart size={14} fill="currentColor" />
+                    ) : notif.type === "FOLLOW" ? (
+                      <UserPlus size={14} />
+                    ) : notif.type === "ADMIN_REPORT" ? (
+                      <Flag size={14} />
+                    ) : notif.type === "ADMIN_BAN" ? (
+                      <ShieldAlert size={14} />
+                    ) : notif.type === "ADMIN_CRISIS" ? (
+                      <AlertTriangle size={14} />
+                    ) : (
+                      <MessageCircle size={14} />
+                    )}
+                  </div>
+                  <p className="text-gray-700 text-sm truncate pr-2">
+                    {isAdminAlert ? (
+                      notif.type === "ADMIN_REPORT"
+                        ? "Nova denúncia por rever."
+                        : notif.type === "ADMIN_BAN"
+                          ? "Uma conta foi suspensa automaticamente."
+                          : "Sinal de crise numa conversa de apoio emocional."
+                    ) : (
+                      <>
+                        <span className="font-semibold">
+                          {notif.sender?.anon_name || "Alguém"}
+                        </span>{" "}
+                        {notif.type === "FOLLOW"
+                          ? "começou a seguir-te."
+                          : `${notif.type === "LIKE" ? "curtiu" : "comentou"} o seu ${notif.targetType === "POST" ? "post" : "comentário"}.`}
+                      </>
+                    )}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
+                    {formatRelativeTime(notif.createdAt)}
+                  </span>
+                  {!notif.isRead && (
+                    <span className="w-2 h-2 rounded-full bg-secondary" />
                   )}
                 </div>
-                <p className="text-gray-700 text-sm truncate pr-2">
-                  <span className="font-semibold">
-                    {notif.sender.anon_name}
-                  </span>{" "}
-                  {notif.type === "FOLLOW"
-                    ? "começou a seguir-te."
-                    : `${notif.type === "LIKE" ? "curtiu" : "comentou"} o seu ${notif.targetType === "POST" ? "post" : "comentário"}.`}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
-                  {formatRelativeTime(notif.createdAt)}
-                </span>
-                {!notif.isRead && (
-                  <span className="w-2 h-2 rounded-full bg-secondary" />
-                )}
-              </div>
-            </Link>
-          ))
+              </Link>
+            );
+          })
         )}
       </div>
     </div>

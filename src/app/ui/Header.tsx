@@ -75,7 +75,21 @@ export default function Header() {
     if (!socket) return;
 
     const handleNewNotification = () => setUnreadCount((prev) => prev + 1);
-    const handleNewMessage = () => setMessageUnreadCount((prev) => prev + 1);
+    const handleNewMessage = () => {
+      // Lê directamente do localStorage (em vez de um valor capturado no
+      // fecho do efeito) para respeitar a preferência mais recente sem
+      // precisar de re-subscrever o socket sempre que ela mude.
+      try {
+        const stored = localStorage.getItem("user_data");
+        const notifyMessages = stored
+          ? JSON.parse(stored).notify_messages
+          : true;
+        if (notifyMessages === false) return;
+      } catch {
+        // Se falhar a leitura, mantém o comportamento por omissão (avisar).
+      }
+      setMessageUnreadCount((prev) => prev + 1);
+    };
     socket.on("notification", handleNewNotification);
     socket.on("message", handleNewMessage);
 
@@ -321,7 +335,7 @@ export default function Header() {
 
             <nav
               className={`
-              max-lg:absolute max-lg:right-0 max-lg:top-12 max-lg:p-4 max-lg:rounded-2xl max-lg:w-68
+              max-lg:absolute max-lg:right-0 max-lg:top-12 max-lg:p-4 max-lg:rounded-2xl max-lg:w-68 max-lg:max-w-[calc(100vw-2rem)]
               max-lg:shadow-xl max-lg:border
               ${isMobileNavOpen ? "max-lg:block" : "max-lg:hidden"}
             `}

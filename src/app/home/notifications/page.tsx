@@ -9,19 +9,25 @@ import {
   Heart,
   Check,
   Trash2,
+  UserPlus,
+  Flag,
+  ShieldAlert,
+  AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/app/api/config";
 
 interface NotificationInterface {
   id: string;
+  senderId: string;
   targetId: string;
-  type: "LIKE" | "COMMENT";
+  targetType: string;
+  type: "LIKE" | "COMMENT" | "ANSWER" | "FOLLOW" | "MENTION" | "ADMIN_REPORT" | "ADMIN_BAN" | "ADMIN_CRISIS";
   isRead: boolean;
   createdAt: string;
   sender: {
     anon_name: string;
-  };
+  } | null;
 }
 
 function formatRelativeTime(dateString: string): string {
@@ -143,50 +149,83 @@ export default function NotificationsPage() {
           </div>
         ) : (
           <div className="flex flex-col division-y divide-secondary/60">
-            {notifications.map((notification) => (
-              <Link
-                key={notification.id}
-                href={`/home/post/${notification.targetId}`}
-                onClick={() => handleMarkAsRead(notification.id)}
-                className={`flex items-start justify-between p-4 rounded-2xl transition gap-4 mb-2 last:mb-0 ${
-                  notification.isRead
-                    ? "bg-white hover:bg-gray-50"
-                    : "bg-secondary/10 hover:bg-secondary/20"
-                }`}>
-                <div className="flex gap-3 items-center justify-center">
-                  <div className="p-1.5 rounded-full bg-secondary/10 text-secondary shrink-0">
-                    {notification.type === "LIKE" ? (
-                      <Heart
-                        size={18}
-                        fill="currentColor"
-                      />
-                    ) : (
-                      <MessageCircle size={18} />
-                    )}
-                  </div>
+            {notifications.map((notification) => {
+              const isAdminAlert = notification.type.startsWith("ADMIN_");
+              const href = isAdminAlert
+                ? notification.type === "ADMIN_REPORT"
+                  ? "/admin/reports"
+                  : notification.type === "ADMIN_BAN"
+                    ? "/admin/users"
+                    : "/admin/support"
+                : notification.type === "FOLLOW"
+                  ? `/home/profile/${notification.senderId}`
+                  : `/home/post/${notification.targetId}`;
 
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-700 font-semibold truncate">
-                        {notification.sender?.anon_name}
-                      </span>
-                      {!notification.isRead && (
-                        <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
+              return (
+                <Link
+                  key={notification.id}
+                  href={href}
+                  onClick={() => handleMarkAsRead(notification.id)}
+                  className={`flex items-start justify-between p-4 rounded-2xl transition gap-4 mb-2 last:mb-0 ${
+                    notification.isRead
+                      ? "bg-white hover:bg-gray-50"
+                      : "bg-secondary/10 hover:bg-secondary/20"
+                  }`}>
+                  <div className="flex gap-3 items-center justify-center">
+                    <div
+                      className={`p-1.5 rounded-full shrink-0 ${
+                        isAdminAlert ? "bg-red-50 text-red-500" : "bg-secondary/10 text-secondary"
+                      }`}>
+                      {notification.type === "LIKE" ? (
+                        <Heart size={18} fill="currentColor" />
+                      ) : notification.type === "FOLLOW" ? (
+                        <UserPlus size={18} />
+                      ) : notification.type === "ADMIN_REPORT" ? (
+                        <Flag size={18} />
+                      ) : notification.type === "ADMIN_BAN" ? (
+                        <ShieldAlert size={18} />
+                      ) : notification.type === "ADMIN_CRISIS" ? (
+                        <AlertTriangle size={18} />
+                      ) : (
+                        <MessageCircle size={18} />
                       )}
                     </div>
-                    <p className="text-sm text-black/80 leading-relaxed">
-                      {notification.type === "LIKE"
-                        ? "curtiu o seu post."
-                        : "comentou no seu post."}
-                    </p>
-                  </div>
-                </div>
 
-                <span className="text-xs text-black/50 whitespace-nowrap pt-1">
-                  {formatRelativeTime(notification.createdAt)}
-                </span>
-              </Link>
-            ))}
+                    <div className="flex flex-col gap-1">
+                      {!isAdminAlert && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-700 font-semibold truncate">
+                            {notification.sender?.anon_name || "Alguém"}
+                          </span>
+                          {!notification.isRead && (
+                            <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
+                          )}
+                        </div>
+                      )}
+                      <p className="text-sm text-black/80 leading-relaxed">
+                        {isAdminAlert
+                          ? notification.type === "ADMIN_REPORT"
+                            ? "Nova denúncia por rever."
+                            : notification.type === "ADMIN_BAN"
+                              ? "Uma conta foi suspensa automaticamente."
+                              : "Sinal de crise numa conversa de apoio emocional."
+                          : notification.type === "LIKE"
+                            ? "curtiu o seu post."
+                            : notification.type === "FOLLOW"
+                              ? "começou a seguir-te."
+                              : notification.type === "ANSWER"
+                                ? "respondeu ao seu comentário."
+                                : "comentou no seu post."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="text-xs text-black/50 whitespace-nowrap pt-1">
+                    {formatRelativeTime(notification.createdAt)}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>

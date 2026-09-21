@@ -1,10 +1,62 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { motion } from "framer-motion";
-import { Bell, MessageSquare, Heart, AtSign, Mail, ArrowLeft } from "lucide-react";
+import { Bell, MessageSquare, Heart, UserPlus, Mail, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { useUser } from "@/app/hooks/user";
+import { api } from "@/app/api/config";
 
 export default function NotificationsSettings() {
+  const { user } = useUser();
+  const [prefs, setPrefs] = useState({
+    notify_comments: true,
+    notify_likes: true,
+    notify_follows: true,
+    notify_messages: true,
+  });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    setPrefs({
+      notify_comments: user.notify_comments ?? true,
+      notify_likes: user.notify_likes ?? true,
+      notify_follows: user.notify_follows ?? true,
+      notify_messages: user.notify_messages ?? true,
+    });
+  }, [user]);
+
+  const toggle = (key: keyof typeof prefs) => {
+    setPrefs((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+    try {
+      setSaving(true);
+      const response = await api.put(`/users/${user.id}`, prefs);
+
+      const stored = localStorage.getItem("user_data");
+      if (stored) {
+        localStorage.setItem(
+          "user_data",
+          JSON.stringify({ ...JSON.parse(stored), ...response.data.user }),
+        );
+      }
+
+      toast.success("Preferências de notificação guardadas!");
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.error || "Erro ao guardar preferências.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -30,7 +82,7 @@ export default function NotificationsSettings() {
         </div>
 
         <div className="flex flex-col gap-4 border-t border-gray-100 pt-4">
-          
+
           {/* Notificação de Novos Comentários */}
           <div className="flex items-center justify-between p-2 hover:bg-gray-50/50 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
@@ -40,7 +92,12 @@ export default function NotificationsSettings() {
                 <p className="text-xs text-zinc-500">Quando alguém comentar num desabafo teu.</p>
               </div>
             </div>
-            <input type="checkbox" defaultChecked className="w-5 h-5 accent-secondary rounded cursor-pointer" />
+            <input
+              type="checkbox"
+              checked={prefs.notify_comments}
+              onChange={() => toggle("notify_comments")}
+              className="w-5 h-5 accent-secondary rounded cursor-pointer"
+            />
           </div>
 
           {/* Notificação de Reações (Apoios) */}
@@ -52,19 +109,29 @@ export default function NotificationsSettings() {
                 <p className="text-xs text-zinc-500">Quando o teu post receber um &quot;Apoiar&quot;.</p>
               </div>
             </div>
-            <input type="checkbox" defaultChecked className="w-5 h-5 accent-secondary rounded cursor-pointer" />
+            <input
+              type="checkbox"
+              checked={prefs.notify_likes}
+              onChange={() => toggle("notify_likes")}
+              className="w-5 h-5 accent-secondary rounded cursor-pointer"
+            />
           </div>
 
-          {/* Alertas de Menções */}
+          {/* Novos Seguidores */}
           <div className="flex items-center justify-between p-2 hover:bg-gray-50/50 rounded-xl transition-colors">
             <div className="flex items-center gap-3">
-              <AtSign size={18} className="text-secondary" />
+              <UserPlus size={18} className="text-secondary" />
               <div>
-                <p className="font-medium text-sm">Alertas de Menções</p>
-                <p className="text-xs text-zinc-500">Se alguém citar o teu identificador anônimo num comentário.</p>
+                <p className="font-medium text-sm">Novos Seguidores</p>
+                <p className="text-xs text-zinc-500">Quando alguém começar a seguir-te.</p>
               </div>
             </div>
-            <input type="checkbox" defaultChecked className="w-5 h-5 accent-secondary rounded cursor-pointer" />
+            <input
+              type="checkbox"
+              checked={prefs.notify_follows}
+              onChange={() => toggle("notify_follows")}
+              className="w-5 h-5 accent-secondary rounded cursor-pointer"
+            />
           </div>
 
           {/* Novas Mensagens Privadas */}
@@ -73,16 +140,30 @@ export default function NotificationsSettings() {
               <Mail size={18} className="text-secondary" />
               <div>
                 <p className="font-medium text-sm">Novas Mensagens Privadas</p>
-                <p className="text-xs text-zinc-500">Quando receberes mensagens em chats anônimos ativos.</p>
+                <p className="text-xs text-zinc-500">
+                  Mostra o alerta/contador quando receberes mensagens (a conversa continua sempre a chegar em tempo real).
+                </p>
               </div>
             </div>
-            <input type="checkbox" defaultChecked className="w-5 h-5 accent-secondary rounded cursor-pointer" />
+            <input
+              type="checkbox"
+              checked={prefs.notify_messages}
+              onChange={() => toggle("notify_messages")}
+              className="w-5 h-5 accent-secondary rounded cursor-pointer"
+            />
           </div>
 
         </div>
 
-        <button className="btn-secondary w-full sm:w-auto self-start mt-2">
-          Guardar Preferências
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="btn-secondary w-full sm:w-auto self-start mt-2">
+          {saving ? (
+            <div className="w-4 h-4 rounded-full border-2 border-current/40 border-t-current animate-spin" />
+          ) : (
+            "Guardar Preferências"
+          )}
         </button>
       </div>
     </motion.div>

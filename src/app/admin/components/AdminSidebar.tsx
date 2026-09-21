@@ -2,20 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Users,
-  Flag,
-  ShieldAlert,
-  ArrowLeft,
-} from "lucide-react";
-
-const NAV_ITEMS = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/users", label: "Utilizadores", icon: Users },
-  { href: "/admin/reports", label: "Denúncias", icon: Flag },
-  { href: "/admin/violations", label: "Violações", icon: ShieldAlert },
-];
+import { ArrowLeft } from "lucide-react";
+import { NAV_ITEMS } from "./navItems";
 
 export default function AdminSidebar() {
   const pathname = usePathname();

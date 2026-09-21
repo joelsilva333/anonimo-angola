@@ -5,6 +5,11 @@ import { ModerationViolationRepository } from "../repositories/moderation-violat
 import { CommentRepository } from "../repositories/comment.repository";
 import { AnswerRepository } from "../repositories/answer.repository";
 import { ReportStatus, ReportTargetType } from "../entities/report.entity";
+import {
+  SupportConversationRepository,
+  SupportMessageRepository,
+} from "../repositories/support.repository";
+import { MessageRepository } from "../repositories/message.repository";
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -15,6 +20,9 @@ export class AdminService {
   private violationRepository: ModerationViolationRepository;
   private commentRepository: CommentRepository;
   private answerRepository: AnswerRepository;
+  private supportConversationRepository: SupportConversationRepository;
+  private supportMessageRepository: SupportMessageRepository;
+  private messageRepository: MessageRepository;
 
   constructor() {
     this.userRepository = new UserRepository();
@@ -23,6 +31,9 @@ export class AdminService {
     this.violationRepository = new ModerationViolationRepository();
     this.commentRepository = new CommentRepository();
     this.answerRepository = new AnswerRepository();
+    this.supportConversationRepository = new SupportConversationRepository();
+    this.supportMessageRepository = new SupportMessageRepository();
+    this.messageRepository = new MessageRepository();
   }
 
   async getStats() {
@@ -41,6 +52,7 @@ export class AdminService {
       resolvedReports,
       dismissedReports,
       totalViolations,
+      crisisConversations,
     ] = await Promise.all([
       this.userRepository.countTotal(),
       this.userRepository.countActive(),
@@ -54,6 +66,7 @@ export class AdminService {
       this.reportRepository.countByStatus(ReportStatus.RESOLVED),
       this.reportRepository.countByStatus(ReportStatus.DISMISSED),
       this.violationRepository.countTotal(),
+      this.supportConversationRepository.countWithCrisis(),
     ]);
 
     return {
@@ -76,6 +89,9 @@ export class AdminService {
       },
       violations: {
         total: totalViolations,
+      },
+      support: {
+        crisisConversations,
       },
     };
   }
@@ -187,6 +203,14 @@ export class AdminService {
           authorAnonName: answer.user?.anon_name || null,
         };
       }
+      if (targetType === ReportTargetType.MESSAGE) {
+        const message = await this.messageRepository.findById(targetId);
+        if (!message) return null;
+        return {
+          text: message.text,
+          authorAnonName: message.sender?.anon_name || null,
+        };
+      }
       return null;
     } catch {
       return null;
@@ -265,6 +289,55 @@ export class AdminService {
       await this.commentRepository.delete(targetId);
     } else if (targetType === ReportTargetType.ANSWER) {
       await this.answerRepository.delete(targetId);
+    } else if (targetType === ReportTargetType.MESSAGE) {
+      await this.messageRepository.delete(targetId);
     }
+  }
+
+  async listSupportConversations(page: number, pageSize: number) {
+    const { items, total } =
+      await this.supportConversationRepository.findAllPaginatedForAdmin(
+        page,
+        pageSize,
+      );
+
+    const crisisIds = await this.supportMessageRepository.findConversationIdsWithCrisis(
+      items.map((c) => c.id),
+    );
+
+    return {
+      items: items.map((c) => ({
+        id: c.id,
+        status: c.status,
+        anon_name: c.user?.anon_name || "Desconhecido",
+        userId: c.userId,
+        hasCrisis: crisisIds.has(c.id),
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+      })),
+      total,
+      page,
+      pageSize,
+    };
+  }
+
+  async getSupportConversation(id: string) {
+    const conversation = await this.supportConversationRepository.findByIdForAdmin(id);
+    if (!conversation) throw new Error("Conversa não encontrada");
+
+    return {
+      id: conversation.id,
+      status: conversation.status,
+      anon_name: conversation.user?.anon_name || "Desconhecido",
+      messages: (conversation.messages || [])
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+        .map((m) => ({
+          id: m.id,
+          role: m.role,
+          content: m.content,
+          isCrisis: m.isCrisis,
+          createdAt: m.createdAt,
+        })),
+    };
   }
 }

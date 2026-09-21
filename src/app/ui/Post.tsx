@@ -289,7 +289,7 @@ export default function Post({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -6 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-1 z-20 min-w-40 overflow-hidden"
+                    className="absolute right-0 top-full mt-1 z-20 min-w-40 max-w-[calc(100vw-2rem)] overflow-hidden"
                     style={{
                       background: "rgba(255,255,255,0.92)",
                       backdropFilter: "blur(20px)",

@@ -9,4 +9,8 @@ export default interface UserInterface {
 	is_active: boolean
 	google_linked?: boolean
 	onboarding_completed?: boolean
+	notify_likes?: boolean
+	notify_comments?: boolean
+	notify_follows?: boolean
+	notify_messages?: boolean
 }

@@ -13,6 +13,17 @@ export class MessageRepository {
     return this.repository.save(message);
   }
 
+  async findById(id: string): Promise<Message | null> {
+    return this.repository.findOne({
+      where: { id },
+      relations: ["sender"],
+    });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.repository.delete(id);
+  }
+
   async findByConversation(
     conversationId: string,
     limit: number,

@@ -78,7 +78,7 @@ export default function AdminUsersPage() {
             className="glass-input pl-9 text-sm"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {(["all", "active", "suspended"] as const).map((s) => (
             <button
               key={s}
@@ -95,104 +95,178 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      <div className="card p-0 overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-6 h-6 border-4 border-secondary border-t-transparent rounded-full animate-spin" />
+      {loading ? (
+        <div className="card flex items-center justify-center py-16">
+          <div className="w-6 h-6 border-4 border-secondary border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : !data || data.items.length === 0 ? (
+        <p className="card text-sm text-center text-gray-400 py-16">Nenhum utilizador encontrado.</p>
+      ) : (
+        <>
+          {/* Mobile: cartões */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {data.items.map((user) => (
+              <div key={user.id} className="card p-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    {user.profile_picture && (
+                      <Image
+                        src={getProfilePictureUrl(user.profile_picture)}
+                        width={34}
+                        height={34}
+                        unoptimized
+                        alt={user.anon_name}
+                        className="rounded-full object-cover w-[34px] h-[34px] shrink-0"
+                      />
+                    )}
+                    <span className="font-medium text-gray-800 truncate">{user.anon_name}</span>
+                  </div>
+                  <span
+                    className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                      user.role === "admin" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-500"
+                    }`}>
+                    {user.role}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-gray-400">
+                  {user.is_active ? (
+                    <span className="font-semibold px-2 py-0.5 rounded-full bg-secondary/15 text-secondary">
+                      Activo
+                    </span>
+                  ) : (
+                    <span
+                      title={user.banned_reason || ""}
+                      className="font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-600 cursor-help">
+                      Suspenso
+                    </span>
+                  )}
+                  <span>{new Date(user.created_at).toLocaleDateString("pt-PT")}</span>
+                </div>
+
+                <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-black/5">
+                  <button
+                    onClick={() => setViolationsTarget(user)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-black/5 transition-colors duration-200 cursor-pointer">
+                    <History size={14} />
+                    Violações
+                  </button>
+                  {user.role !== "admin" &&
+                    (user.is_active ? (
+                      <button
+                        onClick={() => setBanTarget(user)}
+                        disabled={actingId === user.id}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-red-500 hover:bg-red-50 transition-colors duration-200 cursor-pointer disabled:opacity-40">
+                        <ShieldAlert size={14} />
+                        Suspender
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleUnban(user)}
+                        disabled={actingId === user.id}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-secondary hover:bg-secondary/10 transition-colors duration-200 cursor-pointer disabled:opacity-40">
+                        <ShieldCheck size={14} />
+                        Reactivar
+                      </button>
+                    ))}
+                </div>
+              </div>
+            ))}
           </div>
-        ) : !data || data.items.length === 0 ? (
-          <p className="text-sm text-center text-gray-400 py-16">Nenhum utilizador encontrado.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs text-gray-400 uppercase tracking-wide border-b border-black/5">
-                  <th className="px-5 py-3 font-semibold">Utilizador</th>
-                  <th className="px-5 py-3 font-semibold">Role</th>
-                  <th className="px-5 py-3 font-semibold">Estado</th>
-                  <th className="px-5 py-3 font-semibold">Criado em</th>
-                  <th className="px-5 py-3 font-semibold text-right">Acções</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((user) => (
-                  <tr key={user.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-2.5">
-                        {user.profile_picture && (
-                          <Image
-                            src={getProfilePictureUrl(user.profile_picture)}
-                            width={30}
-                            height={30}
-                            unoptimized
-                            alt={user.anon_name}
-                            className="rounded-full object-cover w-[30px] h-[30px]"
-                          />
-                        )}
-                        <span className="font-medium text-gray-800">{user.anon_name}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3">
-                      <span
-                        className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                          user.role === "admin"
-                            ? "bg-purple-100 text-purple-700"
-                            : "bg-gray-100 text-gray-500"
-                        }`}>
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3">
-                      {user.is_active ? (
-                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-secondary/15 text-secondary">
-                          Activo
-                        </span>
-                      ) : (
-                        <span
-                          title={user.banned_reason || ""}
-                          className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-600 cursor-help">
-                          Suspenso
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3 text-gray-400 text-xs">
-                      {new Date(user.created_at).toLocaleDateString("pt-PT")}
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          onClick={() => setViolationsTarget(user)}
-                          title="Ver violações"
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-black/5 transition-colors duration-200 cursor-pointer">
-                          <History size={15} />
-                        </button>
-                        {user.role !== "admin" &&
-                          (user.is_active ? (
-                            <button
-                              onClick={() => setBanTarget(user)}
-                              disabled={actingId === user.id}
-                              title="Suspender"
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors duration-200 cursor-pointer disabled:opacity-40">
-                              <ShieldAlert size={15} />
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleUnban(user)}
-                              disabled={actingId === user.id}
-                              title="Reactivar"
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-secondary hover:bg-secondary/10 transition-colors duration-200 cursor-pointer disabled:opacity-40">
-                              <ShieldCheck size={15} />
-                            </button>
-                          ))}
-                      </div>
-                    </td>
+
+          {/* Desktop: tabela */}
+          <div className="card p-0 overflow-hidden hidden md:block">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-gray-400 uppercase tracking-wide border-b border-black/5">
+                    <th className="px-5 py-3 font-semibold">Utilizador</th>
+                    <th className="px-5 py-3 font-semibold">Role</th>
+                    <th className="px-5 py-3 font-semibold">Estado</th>
+                    <th className="px-5 py-3 font-semibold">Criado em</th>
+                    <th className="px-5 py-3 font-semibold text-right">Acções</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.items.map((user) => (
+                    <tr key={user.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-2.5">
+                          {user.profile_picture && (
+                            <Image
+                              src={getProfilePictureUrl(user.profile_picture)}
+                              width={30}
+                              height={30}
+                              unoptimized
+                              alt={user.anon_name}
+                              className="rounded-full object-cover w-[30px] h-[30px]"
+                            />
+                          )}
+                          <span className="font-medium text-gray-800">{user.anon_name}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3">
+                        <span
+                          className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                            user.role === "admin"
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-gray-100 text-gray-500"
+                          }`}>
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3">
+                        {user.is_active ? (
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-secondary/15 text-secondary">
+                            Activo
+                          </span>
+                        ) : (
+                          <span
+                            title={user.banned_reason || ""}
+                            className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-600 cursor-help">
+                            Suspenso
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3 text-gray-400 text-xs">
+                        {new Date(user.created_at).toLocaleDateString("pt-PT")}
+                      </td>
+                      <td className="px-5 py-3">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => setViolationsTarget(user)}
+                            title="Ver violações"
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-black/5 transition-colors duration-200 cursor-pointer">
+                            <History size={15} />
+                          </button>
+                          {user.role !== "admin" &&
+                            (user.is_active ? (
+                              <button
+                                onClick={() => setBanTarget(user)}
+                                disabled={actingId === user.id}
+                                title="Suspender"
+                                className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors duration-200 cursor-pointer disabled:opacity-40">
+                                <ShieldAlert size={15} />
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleUnban(user)}
+                                disabled={actingId === user.id}
+                                title="Reactivar"
+                                className="p-1.5 rounded-lg text-gray-400 hover:text-secondary hover:bg-secondary/10 transition-colors duration-200 cursor-pointer disabled:opacity-40">
+                                <ShieldCheck size={15} />
+                              </button>
+                            ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       {data && totalPages > 1 && (
         <div className="flex items-center justify-center gap-3">

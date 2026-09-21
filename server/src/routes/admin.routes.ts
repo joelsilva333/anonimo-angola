@@ -221,4 +221,50 @@ router.get("/reports", adminController.listReports);
  */
 router.patch("/reports/:id", adminController.resolveReport);
 
+/**
+ * @swagger
+ * /admin/support/conversations:
+ *   get:
+ *     summary: Lista as conversas de apoio emocional (IA), com destaque para sinais de crise
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista paginada de conversas de apoio
+ */
+router.get("/support/conversations", adminController.listSupportConversations);
+
+/**
+ * @swagger
+ * /admin/support/conversations/{id}:
+ *   get:
+ *     summary: Vê a transcrição completa de uma conversa de apoio emocional
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Conversa com todas as mensagens
+ *       404:
+ *         description: Conversa não encontrada
+ */
+router.get("/support/conversations/:id", adminController.getSupportConversation);
+
 export default router;

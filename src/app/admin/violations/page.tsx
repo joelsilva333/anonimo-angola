@@ -26,48 +26,70 @@ export default function AdminViolationsPage() {
         fica aqui registado. 3 violações em 7 dias suspendem a conta automaticamente.
       </p>
 
-      <div className="card p-0 overflow-hidden">
-        {loading ? (
-          <div className="flex justify-center py-16">
-            <div className="w-6 h-6 border-4 border-secondary border-t-transparent rounded-full animate-spin" />
+      {loading ? (
+        <div className="card flex justify-center py-16">
+          <div className="w-6 h-6 border-4 border-secondary border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : !data || data.items.length === 0 ? (
+        <p className="card text-sm text-center text-gray-400 py-16">Sem violações registadas.</p>
+      ) : (
+        <>
+          {/* Mobile: cartões */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {data.items.map((v) => (
+              <div key={v.id} className="card p-4 flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium text-gray-800 truncate">{v.anon_name}</span>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-600 shrink-0">
+                    {CATEGORY_LABEL[v.category] || v.category}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-gray-400">
+                  <span className="capitalize">{v.contentType}</span>
+                  <span>{new Date(v.created_at).toLocaleString("pt-PT")}</span>
+                </div>
+                {v.reason && <p className="text-xs text-gray-500">{v.reason}</p>}
+              </div>
+            ))}
           </div>
-        ) : !data || data.items.length === 0 ? (
-          <p className="text-sm text-center text-gray-400 py-16">Sem violações registadas.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs text-gray-400 uppercase tracking-wide border-b border-black/5">
-                  <th className="px-5 py-3 font-semibold">Utilizador</th>
-                  <th className="px-5 py-3 font-semibold">Tipo</th>
-                  <th className="px-5 py-3 font-semibold">Categoria</th>
-                  <th className="px-5 py-3 font-semibold">Motivo</th>
-                  <th className="px-5 py-3 font-semibold text-right">Data</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((v) => (
-                  <tr key={v.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
-                    <td className="px-5 py-3 font-medium text-gray-800">{v.anon_name}</td>
-                    <td className="px-5 py-3 text-gray-500 capitalize">{v.contentType}</td>
-                    <td className="px-5 py-3">
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-600">
-                        {CATEGORY_LABEL[v.category] || v.category}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 text-gray-500 max-w-xs truncate" title={v.reason || ""}>
-                      {v.reason || "—"}
-                    </td>
-                    <td className="px-5 py-3 text-right text-xs text-gray-400 whitespace-nowrap">
-                      {new Date(v.created_at).toLocaleString("pt-PT")}
-                    </td>
+
+          {/* Desktop: tabela */}
+          <div className="card p-0 overflow-hidden hidden md:block">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-gray-400 uppercase tracking-wide border-b border-black/5">
+                    <th className="px-5 py-3 font-semibold">Utilizador</th>
+                    <th className="px-5 py-3 font-semibold">Tipo</th>
+                    <th className="px-5 py-3 font-semibold">Categoria</th>
+                    <th className="px-5 py-3 font-semibold">Motivo</th>
+                    <th className="px-5 py-3 font-semibold text-right">Data</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.items.map((v) => (
+                    <tr key={v.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.02]">
+                      <td className="px-5 py-3 font-medium text-gray-800">{v.anon_name}</td>
+                      <td className="px-5 py-3 text-gray-500 capitalize">{v.contentType}</td>
+                      <td className="px-5 py-3">
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-600">
+                          {CATEGORY_LABEL[v.category] || v.category}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-gray-500 max-w-xs truncate" title={v.reason || ""}>
+                        {v.reason || "—"}
+                      </td>
+                      <td className="px-5 py-3 text-right text-xs text-gray-400 whitespace-nowrap">
+                        {new Date(v.created_at).toLocaleString("pt-PT")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       {data && totalPages > 1 && (
         <div className="flex items-center justify-center gap-3">

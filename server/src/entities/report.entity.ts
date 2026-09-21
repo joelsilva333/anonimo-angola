@@ -11,6 +11,7 @@ export enum ReportTargetType {
 	POST = "post",
 	COMMENT = "comment",
 	ANSWER = "answer",
+	MESSAGE = "message",
 }
 
 export enum ReportStatus {

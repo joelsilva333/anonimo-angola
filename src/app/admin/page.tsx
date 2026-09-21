@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useAdminStats } from "@/app/hooks/admin";
 import {
   Users,
@@ -123,6 +124,20 @@ export default function AdminDashboardPage() {
             value={stats.violations.total}
           />
         </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wide">
+          Suporte
+        </h2>
+        <Link href="/admin/support" className="block w-full sm:w-auto sm:inline-block">
+          <StatCard
+            icon={HeartCrack}
+            label="Conversas de apoio com sinal de crise"
+            value={stats.support.crisisConversations}
+            tone={stats.support.crisisConversations > 0 ? "danger" : "default"}
+          />
+        </Link>
       </section>
     </div>
   );

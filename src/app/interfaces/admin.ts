@@ -19,6 +19,9 @@ export interface AdminStats {
   violations: {
     total: number;
   };
+  support: {
+    crisisConversations: number;
+  };
 }
 
 export interface AdminUser {
@@ -69,4 +72,29 @@ export interface PaginatedResult<T> {
   total: number;
   page: number;
   pageSize: number;
+}
+
+export interface AdminSupportConversation {
+  id: string;
+  status: "active" | "closed";
+  anon_name: string;
+  userId: string;
+  hasCrisis: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminSupportMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  isCrisis: boolean;
+  createdAt: string;
+}
+
+export interface AdminSupportConversationDetail {
+  id: string;
+  status: "active" | "closed";
+  anon_name: string;
+  messages: AdminSupportMessage[];
 }

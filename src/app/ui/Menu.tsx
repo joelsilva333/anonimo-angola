@@ -52,7 +52,7 @@ export default function Menu({
 
   return (
     <ul
-      className="min-w-56 flex flex-col rounded-2xl overflow-hidden shadow-xl"
+      className="min-w-56 max-w-[calc(100vw-2rem)] flex flex-col rounded-2xl overflow-hidden shadow-xl"
       style={{
         background: "rgba(255,255,255,0.85)",
         backdropFilter: "blur(20px)",

@@ -14,6 +14,10 @@ export enum NotificationType {
   ANSWER = "ANSWER",
   MENTION = "MENTION",
   FOLLOW = "FOLLOW",
+  /** Alertas administrativos — só chegam a utilizadores com role="admin". */
+  ADMIN_REPORT = "ADMIN_REPORT",
+  ADMIN_BAN = "ADMIN_BAN",
+  ADMIN_CRISIS = "ADMIN_CRISIS",
 }
 
 export enum TargetType {
@@ -21,6 +25,8 @@ export enum TargetType {
   COMMENT = "COMMENT",
   ANSWER = "ANSWER",
   USER = "USER",
+  REPORT = "REPORT",
+  SUPPORT_CONVERSATION = "SUPPORT_CONVERSATION",
 }
 
 @Entity("notifications")

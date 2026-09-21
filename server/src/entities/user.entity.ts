@@ -66,4 +66,17 @@ export class User {
 
 	@Column({ type: "timestamp", nullable: true })
 	banned_at!: Date | null
+
+	/** Preferências de notificação — cada uma controla um tipo de aviso em tempo real/sino. */
+	@Column({ type: "boolean", default: true })
+	notify_likes!: boolean
+
+	@Column({ type: "boolean", default: true })
+	notify_comments!: boolean
+
+	@Column({ type: "boolean", default: true })
+	notify_follows!: boolean
+
+	@Column({ type: "boolean", default: true })
+	notify_messages!: boolean
 }

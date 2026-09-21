@@ -6,6 +6,8 @@ import {
   AdminReport,
   AdminReportStatus,
   AdminViolation,
+  AdminSupportConversation,
+  AdminSupportConversationDetail,
   PaginatedResult,
 } from "../interfaces/admin";
 
@@ -147,4 +149,55 @@ export function useAdminUserViolations(userId: string | null) {
   }, [fetchViolations]);
 
   return { violations, loading, refetch: fetchViolations };
+}
+
+export function useAdminSupportConversations(filters: { page: number; pageSize: number }) {
+  const [data, setData] = useState<PaginatedResult<AdminSupportConversation> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const fetchConversations = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/admin/support/conversations", { params: filters });
+      setData(response.data);
+      setError(false);
+    } catch (err) {
+      console.error("Erro ao buscar conversas de apoio:", err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.page, filters.pageSize]);
+
+  useEffect(() => {
+    fetchConversations();
+  }, [fetchConversations]);
+
+  return { data, loading, error, refetch: fetchConversations };
+}
+
+export function useAdminSupportConversation(id: string | null) {
+  const [conversation, setConversation] = useState<AdminSupportConversationDetail | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchConversation = useCallback(async () => {
+    if (!id) return;
+    try {
+      setLoading(true);
+      const response = await api.get(`/admin/support/conversations/${id}`);
+      setConversation(response.data);
+    } catch (err) {
+      console.error("Erro ao buscar conversa de apoio:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchConversation();
+  }, [fetchConversation]);
+
+  return { conversation, loading, refetch: fetchConversation };
 }

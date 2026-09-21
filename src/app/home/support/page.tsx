@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { HeartHandshake, Send, ShieldAlert, RotateCcw } from "lucide-react";
+import { HeartHandshake, Send, RotateCcw } from "lucide-react";
 import { useSupportChat } from "@/app/hooks/use-support-chat";
 
 export default function SupportPage() {
@@ -37,28 +37,16 @@ export default function SupportPage() {
           </span>
           <h1 className="text-2xl font-bold">Apoio Emocional</h1>
         </span>
-        <p className="text-sm text-gray-500 leading-relaxed max-lg:hidden">
+        <p className="text-xs lg:text-sm text-gray-500 leading-relaxed line-clamp-2 lg:line-clamp-none">
           Este é um espaço anónimo para desabafares com uma IA que ouve sem
           julgar. Não é um profissional de saúde e não substitui terapia ou
           aconselhamento médico.
         </p>
       </motion.div>
 
-      <div className="w-full bg-amber-50 border border-amber-200 text-amber-800 hidden rounded-2xl p-4 items-start gap-3 text-sm">
-        <ShieldAlert
-          size={18}
-          className="shrink-0 mt-0.5"
-        />
-        <p>
-          Se estás em perigo imediato, liga já para o{" "}
-          <strong>INEMA — 111</strong>, ou dirige-te à urgência mais próxima.
-          Fala também com alguém de confiança sempre que puderes.
-        </p>
-      </div>
-
       <div
         ref={scrollRef}
-        className="w-full sticky bottom-22 bg-white rounded-3xl border border-gray-100 flex flex-col gap-4 p-6 min-h-[50vh] max-h-[60vh] overflow-y-auto">
+        className="w-full sticky bottom-22 bg-white rounded-3xl border border-gray-100 flex flex-col gap-4 p-6 min-h-[50dvh] max-h-[60dvh] max-lg:max-h-[45dvh] overflow-y-auto">
         {loading && (
           <div className="flex items-center justify-center m-auto gap-1">
             <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" />

@@ -10,5 +10,5 @@ export interface NotificationInterface {
   sender: {
     anon_name: string;
     profile_picture: string;
-  };
+  } | null;
 }

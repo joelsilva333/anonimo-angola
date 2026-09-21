@@ -1,6 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
   Phone,
@@ -11,6 +13,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Cookies from "universal-cookie";
 import { useUser } from "@/app/hooks/user";
 import { api } from "@/app/api/config";
 import { auth } from "@/app/lib/firebase";
@@ -26,8 +30,21 @@ import { FcGoogle } from "react-icons/fc";
 
 export default function ProfileSettings() {
   const { user } = useUser();
+  const router = useRouter();
   const [googleLinked, setGoogleLinked] = useState(!!user?.google_linked);
   const [linkingGoogle, setLinkingGoogle] = useState(false);
+
+  const [anonName, setAnonName] = useState(user?.anon_name || "");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (user?.anon_name) setAnonName(user.anon_name);
+  }, [user?.anon_name]);
 
   const [phoneNumber, setPhoneNumber] = useState(user?.phone_number || "");
   const [phoneAdded, setPhoneAdded] = useState(!!user?.phone_number);
@@ -97,7 +114,6 @@ export default function ProfileSettings() {
         );
       }
       toast.success("Telefone de recuperação associado com sucesso!");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(
         error?.response?.data?.error || "Código incorreto ou expirado.",
@@ -127,13 +143,72 @@ export default function ProfileSettings() {
         }
       }
       toast.success("Conta Google vinculada com sucesso!");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(
         error?.response?.data?.error || "Erro ao vincular conta Google.",
       );
     } finally {
       setLinkingGoogle(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+
+    const trimmedName = anonName.trim();
+    const payload: Record<string, string> = {};
+
+    if (trimmedName && trimmedName !== user.anon_name) {
+      payload.anon_name = trimmedName;
+    }
+    if (newPassword) {
+      payload.password_hash = newPassword;
+      payload.current_password = currentPassword;
+    }
+
+    if (Object.keys(payload).length === 0) {
+      toast.info("Não há alterações para guardar.");
+      return;
+    }
+
+    try {
+      setSavingProfile(true);
+      const response = await api.put(`/users/${user.id}`, payload);
+
+      const stored = localStorage.getItem("user_data");
+      if (stored) {
+        localStorage.setItem(
+          "user_data",
+          JSON.stringify({ ...JSON.parse(stored), ...response.data.user }),
+        );
+      }
+
+      setCurrentPassword("");
+      setNewPassword("");
+      toast.success("Alterações guardadas com sucesso!");
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.error || "Erro ao guardar alterações.",
+      );
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    try {
+      setDeleting(true);
+      await api.delete(`/users/${user.id}`);
+      localStorage.removeItem("user_data");
+      new Cookies().remove("aa_token", { path: "/" });
+      toast.success("Conta eliminada. Até sempre.");
+      router.push("/");
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.error || "Erro ao eliminar a conta.",
+      );
+      setDeleting(false);
     }
   };
 
@@ -163,6 +238,8 @@ export default function ProfileSettings() {
           </label>
           <input
             type="text"
+            value={anonName}
+            onChange={(e) => setAnonName(e.target.value)}
             placeholder="Escolha um nome de usuário anônimo"
             className="w-full bg-gray-100 rounded-2xl px-4 py-2 outline-none"
           />
@@ -268,19 +345,30 @@ export default function ProfileSettings() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <input
               type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
               placeholder="Palavra-passe atual"
               className="w-full bg-gray-100 rounded-2xl px-4 py-2 outline-none"
             />
             <input
               type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Nova palavra-passe"
               className="w-full bg-gray-100 rounded-2xl px-4 py-2 outline-none"
             />
           </div>
         </div>
 
-        <button className="btn-secondary w-full sm:w-auto self-start">
-          Guardar Alterações
+        <button
+          onClick={handleSaveProfile}
+          disabled={savingProfile}
+          className="btn-secondary w-full sm:w-auto self-start">
+          {savingProfile ? (
+            <div className="w-4 h-4 rounded-full border-2 border-current/40 border-t-current animate-spin" />
+          ) : (
+            "Guardar Alterações"
+          )}
         </button>
       </div>
 
@@ -295,10 +383,50 @@ export default function ProfileSettings() {
           </p>
         </div>
 
-        <button className="btn-warning w-full sm:w-auto self-start">
+        <button
+          onClick={() => setDeleteModalOpen(true)}
+          className="btn-warning w-full sm:w-auto self-start">
           Eliminar Conta Permanentemente
         </button>
       </div>
+
+      <AnimatePresence>
+        {deleteModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="card max-w-sm w-full p-6 flex flex-col gap-4">
+              <h3 className="text-lg font-bold text-gray-900">
+                Eliminar a conta para sempre?
+              </h3>
+              <p className="text-sm text-gray-500">
+                Esta acção não pode ser desfeita. Todos os teus desabafos,
+                comentários, respostas, mensagens e ligações são
+                permanentemente apagados.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setDeleteModalOpen(false)}
+                  className="btn-secondary">
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                  className="btn-warning">
+                  {deleting ? (
+                    <div className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                  ) : (
+                    "Eliminar definitivamente"
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
