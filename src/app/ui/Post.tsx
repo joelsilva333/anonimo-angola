@@ -8,6 +8,7 @@ import {
   MessageCircle,
   Heart,
   Clock,
+  Flag,
 } from "lucide-react";
 import Image from "next/image";
 import TimeAgo from "react-timeago";
@@ -16,6 +17,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Comment from "./Comment";
 import AiWelcomeComment from "./AiWelcomeComment";
 import CrisisSupportBanner from "./CrisisSupportBanner";
+import ReportModal from "./ReportModal";
 import SimilarPosts from "./SimilarPosts";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
@@ -32,6 +34,8 @@ import {
   FaRegCopy,
 } from "react-icons/fa";
 import { getProfilePictureUrl } from "../utils/getProfilePicture";
+import { useUser } from "../hooks/user";
+import { getSocket } from "../lib/socket";
 
 interface CommentInput {
   text: string;
@@ -48,7 +52,6 @@ const glassCard = {
 
 export default function Post({
   post,
-  refetch,
   showSimilar = false,
 }: {
   post: PostInterface;
@@ -57,23 +60,65 @@ export default function Post({
 }) {
   const { register, handleSubmit, reset, setFocus } = useForm<CommentInput>();
   const router = useRouter();
+  const { user } = useUser();
+  const isOwner = !!user && user.id === (post.userId || post.user?.id);
 
   const [loading, setLoading] = useState(false);
   const [comments, setComments] = useState(post.comments || []);
   const [showAll, setShowAll] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [liked, setLiked] = useState(post.has_reacted || false);
+  const [reactionType, setReactionType] = useState(post.reaction_type);
   const [likesCount, setLikesCount] = useState(post.like || 0);
   const [shareLinks, setShareLinks] = useState<
     ShareResponse["shareLinks"] | null
   >(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   useEffect(() => {
     setLiked(post.has_reacted || false);
+    setReactionType(post.reaction_type);
     setLikesCount(post.like || 0);
     setComments(post.comments || []);
   }, [post]);
+
+  // Actualizações em tempo real (via socket.io) para reagir/comentar sem
+  // precisar de recarregar a página — outras pessoas a ver o mesmo desabafo
+  // veem a reação/comentário aparecer instantaneamente.
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const onPostReaction = (payload: {
+      postId: string;
+      likesCount: number;
+    }) => {
+      if (payload.postId !== post.id) return;
+      setLikesCount(payload.likesCount);
+    };
+
+    const onNewComment = (payload: {
+      postId: string;
+      comment: PostInterface["comments"][number];
+    }) => {
+      if (payload.postId !== post.id) return;
+      setComments((prev) =>
+        prev.some((c) => c.id === payload.comment.id)
+          ? prev
+          : [payload.comment, ...prev],
+      );
+    };
+
+    socket.on("feed:post-reaction", onPostReaction);
+    socket.on("feed:new-comment", onNewComment);
+
+    return () => {
+      socket.off("feed:post-reaction", onPostReaction);
+      socket.off("feed:new-comment", onNewComment);
+    };
+  }, [post.id]);
 
   const isAuthenticated = (): boolean => {
     if (typeof window !== "undefined")
@@ -97,8 +142,15 @@ export default function Post({
       setLoading(true);
       const response = await api.post(`/comments/${post.id}`, data);
       if (response.status === 201) {
-        setComments((prev) => [response.data.comment, ...prev]);
-        router.refresh();
+        const newComment = response.data.comment;
+        // O evento de tempo real (feed:new-comment) também chega a este
+        // separador e pode ser mais rápido que esta resposta — evita
+        // duplicar caso já tenha sido inserido por ele.
+        setComments((prev) =>
+          prev.some((c) => c.id === newComment.id)
+            ? prev
+            : [newComment, ...prev],
+        );
         reset();
       }
     } catch (error: any) {
@@ -115,12 +167,23 @@ export default function Post({
       setIsLoginModalOpen(true);
       return;
     }
+
+    const wasLiked = liked;
+    const prevCount = likesCount;
+    const prevType = reactionType;
+
+    // Actualização optimista: a reacção parece instantânea, sem esperar
+    // pela resposta do servidor nem recarregar a lista de posts.
+    setLiked(!wasLiked);
+    setReactionType(wasLiked ? null : "like");
+    setLikesCount((c) => (wasLiked ? c - 1 : c + 1));
+
     try {
-      const response = await api.post(`/reactions/post/${post.id}`, {
-        type: "like",
-      });
-      if (response.status === 200) refetch();
+      await api.post(`/reactions/post/${post.id}`, { type: "like" });
     } catch (error: any) {
+      setLiked(wasLiked);
+      setReactionType(prevType);
+      setLikesCount(prevCount);
       toast.error(
         error?.response?.data?.message || "Erro ao reagir. Tente novamente.",
       );
@@ -159,7 +222,16 @@ export default function Post({
         className="w-full flex flex-col gap-4 p-6"
         style={glassCard}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link
+            href={
+              post.userId || post.user?.id
+                ? `/home/profile/${post.userId || post.user?.id}`
+                : "#"
+            }
+            onClick={(e) => {
+              if (!post.userId && !post.user?.id) e.preventDefault();
+            }}
+            className="flex items-center gap-3">
             {(post.profile_picture || post.user?.profile_picture) && (
               <div className="relative">
                 <Image
@@ -181,7 +253,7 @@ export default function Post({
             )}
             <span className="flex flex-col">
               <p
-                className="text-sm font-semibold text-gray-900"
+                className="text-sm font-semibold text-gray-900 hover:underline"
                 style={{ fontFamily: "'Raleway', sans-serif" }}>
                 {post.anon_name || post.user?.anon_name}
               </p>
@@ -193,14 +265,57 @@ export default function Post({
                 />
               </span>
             </span>
-          </div>
+          </Link>
 
-          <button className="p-1.5 rounded-full transition-all duration-200 cursor-pointer hover:bg-black/5">
-            <EllipsisVertical
-              size={18}
-              className="text-gray-400"
-            />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setIsOptionsOpen((prev) => !prev)}
+              className="p-1.5 rounded-full transition-all duration-200 cursor-pointer hover:bg-black/5">
+              <EllipsisVertical
+                size={18}
+                className="text-gray-400"
+              />
+            </button>
+
+            <AnimatePresence>
+              {isOptionsOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-50"
+                    onClick={() => setIsOptionsOpen(false)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -6 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -6 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-1 z-20 min-w-40 overflow-hidden"
+                    style={{
+                      background: "rgba(255,255,255,0.92)",
+                      backdropFilter: "blur(20px)",
+                      border: "1px solid rgba(255,255,255,0.50)",
+                      borderRadius: "14px",
+                      boxShadow: "0 12px 32px rgba(30,30,30,0.14)",
+                    }}>
+                    <button
+                      onClick={() => {
+                        setIsOptionsOpen(false);
+                        if (!isAuthenticated()) {
+                          setIsLoginModalOpen(true);
+                          return;
+                        }
+                        setIsReportModalOpen(true);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors duration-200 cursor-pointer"
+                      style={{ fontFamily: "'Raleway', sans-serif" }}>
+                      <Flag size={15} />
+                      Denunciar
+                    </button>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Texto */}
@@ -217,14 +332,14 @@ export default function Post({
           <p
             className="text-xs text-gray-400"
             style={{ fontFamily: "'Raleway', sans-serif" }}>
-            {liked && post.reaction_type === "like"
+            {liked && reactionType === "like"
               ? `Você${likesCount > 1 ? ` e mais ${likesCount - 1}` : ""} apoiou`
               : `${likesCount} pessoa${likesCount > 1 ? "s" : ""} ${likesCount > 1 ? "apoiaram" : "apoiou"}`}
           </p>
         )}
 
         {/* Banner de acolhimento em caso de crise emocional detectada pela IA */}
-        {post.ai_crisis_detected && <CrisisSupportBanner />}
+        {post.ai_crisis_detected && isOwner && <CrisisSupportBanner />}
 
         <div className="flex flex-col gap-2">
           <div style={{ height: 1, background: "rgba(0,0,0,0.06)" }} />
@@ -236,16 +351,16 @@ export default function Post({
                 whileTap={{ scale: 0.9 }}
                 onClick={handleLike}
                 className={`w-full flex justify-center items-center py-2 rounded-xl gap-2 cursor-pointer transition-all duration-200 text-sm font-medium ${
-                  liked && post.reaction_type === "like"
+                  liked && reactionType === "like"
                     ? "bg-secondary/15 text-secondary"
                     : "hover:bg-black/5 text-gray-600"
                 }`}>
                 <Heart
                   size={17}
-                  className={`transition-all duration-300 ${liked && post.reaction_type === "like" ? "fill-secondary text-secondary" : ""}`}
+                  className={`transition-all duration-300 ${liked && reactionType === "like" ? "fill-secondary text-secondary" : ""}`}
                 />
                 <span className="max-lg:hidden">
-                  {liked && post.reaction_type === "like" ? "Apoiou" : "Apoiar"}
+                  {liked && reactionType === "like" ? "Apoiou" : "Apoiar"}
                 </span>
               </motion.button>
             </li>
@@ -299,7 +414,7 @@ export default function Post({
                 <Comment
                   key={comment.id}
                   comment={comment}
-                  refetch={refetch}
+                  postId={post.id}
                 />
               ))}
             </ul>
@@ -535,6 +650,14 @@ export default function Post({
           </div>
         )}
       </AnimatePresence>
+
+      {/* Modal: Denunciar */}
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        targetType="post"
+        targetId={post.id}
+      />
     </>
   );
 }

@@ -1,0 +1,293 @@
+import { User } from "../entities/user.entity";
+import bcrypt from "bcrypt";
+import { UserRepository } from "../repositories/user.repository";
+import { UpdateUserDTO } from "../dto/user.dto";
+import { encrypt, decrypt } from "../utils/crypto";
+import aiService from "./ai.service";
+
+export class UserService {
+  private userRepository: UserRepository;
+
+  constructor() {
+    this.userRepository = new UserRepository();
+  }
+
+  async findById(
+    id: string,
+    loggedUserId?: string,
+    loggedUserRole?: string,
+  ): Promise<Partial<User>> {
+    const user = await this.userRepository.findById(id);
+
+    if (!user) {
+      throw new Error("Utilizador não encontrado");
+    }
+
+    if (loggedUserId === user.id || loggedUserRole === "admin") {
+      if (user.phone_number) {
+        try {
+          user.phone_number = decrypt(user.phone_number);
+        } catch (error) {
+          console.error("Erro ao descriptografar telefone:", error);
+        }
+      }
+    } else {
+      const { phone_number, password_hash, google_id_hash, ...safeUser } =
+        user;
+      return safeUser;
+    }
+
+    const { password_hash, google_id_hash, ...safeUser } = user;
+
+    return safeUser;
+  }
+
+  async find(
+    loggedUserId?: string,
+    loggedUserRole?: string,
+  ): Promise<
+    {
+      id: string;
+      anon_name: string;
+      phone_number?: string;
+      profile_picture: string;
+      created_at: Date;
+      is_active: boolean;
+    }[]
+  > {
+    const users = await this.userRepository.findAll();
+
+    return users.map((user) => {
+      const isOwnerOrAdmin =
+        loggedUserId === user.id || loggedUserRole === "admin";
+      let decryptedPhone: string | undefined = undefined;
+
+      if (isOwnerOrAdmin && user.phone_number) {
+        try {
+          decryptedPhone = decrypt(user.phone_number);
+        } catch (error) {
+          console.error("Erro ao descriptografar telefone na listagem:", error);
+        }
+      }
+
+      return {
+        id: user.id,
+        anon_name: user.anon_name,
+        ...(isOwnerOrAdmin ? { phone_number: decryptedPhone } : {}),
+        profile_picture: user.profile_picture,
+        created_at: user.created_at,
+        is_active: user.is_active,
+      };
+    });
+  }
+
+  async findByPhone(
+    phone_number: string,
+    loggedUserId?: string,
+    loggedUserRole?: string,
+  ): Promise<Partial<User>> {
+    if (!phone_number) {
+      throw new Error("O número de telefone é obrigatório");
+    }
+
+    const normalizedSearchPhone = phone_number
+      .replace(/\s+/g, "")
+      .replace("+244", "")
+      .replace(/^244/, "");
+
+    const users = await this.userRepository.findAll();
+
+    let user: User | undefined;
+
+    for (const item of users) {
+      if (!item.phone_number) continue;
+
+      try {
+        const decryptedPhone = decrypt(item.phone_number);
+
+        const normalizedDatabasePhone = decryptedPhone
+          .replace(/\s+/g, "")
+          .replace("+244", "")
+          .replace(/^244/, "");
+
+        if (normalizedDatabasePhone === normalizedSearchPhone) {
+          user = item;
+          break;
+        }
+      } catch (error) {
+        console.error(
+          `Erro ao descriptografar telefone do utilizador ${item.id}:`,
+          error,
+        );
+      }
+    }
+
+    if (!user) {
+      throw new Error(`Nenhum utilizador encontrado com o telefone informado`);
+    }
+
+    const isOwnerOrAdmin =
+      loggedUserId === user.id || loggedUserRole === "admin";
+
+    let responseUser = { ...user };
+
+    if (isOwnerOrAdmin && responseUser.phone_number) {
+      try {
+        responseUser.phone_number = decrypt(responseUser.phone_number);
+      } catch (error) {
+        console.error("Erro ao descriptografar telefone na resposta:", error);
+
+        throw new Error("Não foi possível processar o telefone do utilizador");
+      }
+    }
+
+    const { password_hash, google_id_hash, ...safeUser } = responseUser;
+
+    if (!isOwnerOrAdmin) {
+      const { phone_number, ...userWithoutPhone } = safeUser;
+      return userWithoutPhone;
+    }
+
+    return safeUser;
+  }
+
+  async update (
+    id: string,
+    input: UpdateUserDTO,
+    loggedUserId?: string,
+    loggedUserRole?: string,
+  ): Promise<Partial<User>> {
+    const user = await this.userRepository.findById(id);
+
+    if (!user) {
+      throw new Error("Utilizador não encontrado");
+    }
+
+    const isOwner = loggedUserId === user.id;
+    const isAdmin = loggedUserRole === "admin";
+
+    if (!isOwner && !isAdmin) {
+      throw new Error("Não tem permissão para atualizar este utilizador");
+    }
+
+    if (input.anon_name !== undefined && input.anon_name !== user.anon_name) {
+      const anonName = input.anon_name.trim();
+
+      if (anonName.length < 3 || anonName.length > 30) {
+        throw new Error(
+          "O nome de utilizador deve ter entre 3 e 30 caracteres",
+        );
+      }
+
+      const reservedNames = [
+        "admin",
+        "administrator",
+        "support",
+        "moderator",
+        "root",
+        "anonimo",
+        "anônimo",
+        "staff",
+      ];
+
+      if (reservedNames.includes(anonName.toLowerCase())) {
+        throw new Error("Este nome de utilizador não está disponível");
+      }
+
+      const nameCheck = await aiService.checkAnonymousName(anonName);
+      if (!nameCheck.anonymous) {
+        throw new Error(
+          nameCheck.reason ||
+            "Este nome parece identificar-te. Escolhe um pseudónimo mais genérico.",
+        );
+      }
+
+      const existingUser = await this.userRepository.findByAnonName(anonName);
+
+      if (existingUser && existingUser.id !== user.id) {
+        throw new Error("Este nome de utilizador já está em uso");
+      }
+
+      user.anon_name = anonName;
+    }
+
+    if (input.password_hash) {
+      if (input.password_hash.length < 8) {
+        throw new Error("A palavra-passe deve ter pelo menos 8 caracteres");
+      }
+
+      const isSamePassword = await bcrypt.compare(
+        input.password_hash,
+        user.password_hash,
+      );
+
+      if (isSamePassword) {
+        throw new Error("A nova palavra-passe deve ser diferente da atual");
+      }
+
+      user.password_hash = await bcrypt.hash(input.password_hash, 10);
+    }
+
+    if (input.phone_number) {
+      const phone = input.phone_number.replace(/\s/g, "");
+
+      const phoneRegex = /^(\+244)?9\d{8}$/;
+
+      if (!phoneRegex.test(phone)) {
+        throw new Error("Número de telefone inválido");
+      }
+
+      const encryptedPhone = encrypt(phone);
+
+      const existingPhone =
+        await this.userRepository.findByPhoneNumber(encryptedPhone);
+
+      if (existingPhone && existingPhone.id !== user.id) {
+        throw new Error("Este número já está associado a outra conta");
+      }
+
+      user.phone_number = encryptedPhone;
+    }
+
+    if (isAdmin && input.is_active !== undefined) {
+      user.is_active = input.is_active;
+    }
+
+    const updatedUser = await this.userRepository.update(user);
+
+    const responseUser: Partial<User> = {
+      ...updatedUser,
+    };
+
+    delete responseUser.password_hash;
+    delete responseUser.google_id_hash;
+
+    if (isOwner || isAdmin) {
+      if (responseUser.phone_number) {
+        try {
+          responseUser.phone_number = decrypt(responseUser.phone_number);
+        } catch (error) {
+          console.error("Erro ao descriptografar telefone:", error);
+
+          throw new Error("Não foi possível processar o telefone");
+        }
+      }
+
+      return responseUser;
+    }
+
+    delete responseUser.phone_number;
+
+    return responseUser;
+  }
+
+  async delete(id: string): Promise<void> {
+    const user = await this.userRepository.findById(id);
+
+    if (!user) {
+      throw new Error("Utilizador não encontrado");
+    }
+
+    await this.userRepository.delete(id);
+  }
+}

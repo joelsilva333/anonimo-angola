@@ -3,7 +3,7 @@ import UserInterface from "./user";
 
 export interface PostInterface {
   id: string;
-  user_id: string;
+  userId: string;
   anon_name: string;
   user: UserInterface;
   profile_picture?: string;

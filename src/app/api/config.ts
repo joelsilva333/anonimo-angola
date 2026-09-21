@@ -38,6 +38,16 @@ api.interceptors.response.use(
       }
     }
 
+    if (error?.response?.data?.code === "ACCOUNT_SUSPENDED") {
+      cookies.remove("aa_token", { path: "/" });
+      localStorage.removeItem("user_data");
+
+      if (typeof window !== "undefined") {
+        const reason = error.response.data.error || "Esta conta foi suspensa.";
+        window.location.href = `/login?suspended=${encodeURIComponent(reason)}`;
+      }
+    }
+
     return Promise.reject(error);
   },
 );

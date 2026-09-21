@@ -1,83 +1,161 @@
-import {
-  EllipsisVertical,
-  Forward,
-  MessageCircle,
-  Heart,
-} from "lucide-react";
-import Image from "next/image";
+"use client";
 
-export default async function ProfilePage({
-  params,
-}: {
-  params: Promise<{ profileId: string }>;
-}) {
-  const { profileId } = await params;
+import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { User, MessageCircle } from "lucide-react";
+import Link from "next/link";
+import { toast } from "react-toastify";
+import { useGetPostsByUserId } from "@/app/hooks/post";
+import { useUser, useUserProfile } from "@/app/hooks/user";
+import { getProfilePictureUrl } from "@/app/utils/getProfilePicture";
+import Post from "../../../ui/Post";
+import { PostSkeletonList } from "../../../ui/PostSkeleton";
+import FollowButton from "../../../ui/FollowButton";
+import FollowListModal from "../../../ui/FollowListModal";
+
+export default function ProfilePage() {
+  const { profileId } = useParams<{ profileId: string }>();
+  const router = useRouter();
+  const { user } = useUser();
+  const isOwnProfile = !!user && user.id === profileId;
+
+  useEffect(() => {
+    if (isOwnProfile) router.replace("/home/profile");
+  }, [isOwnProfile, router]);
+
+  const {
+    profile,
+    loading: profileLoading,
+    refetch: refetchProfile,
+  } = useUserProfile(isOwnProfile ? undefined : profileId);
+
+  const { userPosts: posts, loading, error, refetch } = useGetPostsByUserId(
+    isOwnProfile ? undefined : profileId,
+  );
+
+  const [listModal, setListModal] = useState<"followers" | "following" | null>(
+    null,
+  );
+
+  const requireAuth = () => {
+    if (typeof window !== "undefined" && localStorage.getItem("user_data")) {
+      return true;
+    }
+    toast.info("Precisas de uma conta para seguir outros perfis.");
+    router.push("/login");
+    return false;
+  };
+
+  if (isOwnProfile) return null;
+
+  const anonName = profile?.anon_name || "Usuário Anônimo";
+  const profilePicture = profile?.profile_picture;
 
   return (
     <>
-      <div className="w-full flex items-center gap-8 bg-[#595959] p-8">
-        <Image
-          src={"/"}
-          width={150}
-          height={150}
-          alt="Joel"
-          className="rounded-2xl bg-gray-300"
-        />
-
-        <h1 className="font-semibold text-2xl text-white">
-          Usuário Anônimo {profileId}
-        </h1>
-      </div>
-
-      <h1 className="text-lg font-bold text-left w-full">MEUS DESABAFOS</h1>
-
-      <div className="w-full bg-white p-6 rounded-3xl flex flex-col gap-4 hover:shadow-lg transition-shadow duration-300">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Image
-              src={"/"}
-              width={44}
-              height={44}
-              alt=""
-              className="rounded-full bg-gray-500"
+      <div className="w-full flex items-center gap-8 bg-gradient-to-r from-[#4B6D94] to-[#10192B] p-8 max-lg:gap-4 max-lg:p-4 max-lg:min-h-44">
+        {profilePicture ? (
+          <Image
+            src={getProfilePictureUrl(profilePicture)}
+            width={150}
+            unoptimized
+            height={150}
+            alt={anonName}
+            className="rounded-2xl bg-gray-300 w-37.5 h-37.5 max-lg:w-24 max-lg:h-24 object-cover"
+          />
+        ) : (
+          <span className="w-[150px] h-[150px] max-lg:w-24 max-lg:h-24 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+            <User
+              size={48}
+              className="text-white/70"
             />
-            <span className="flex flex-col">
-              <p className="text-lg font-semibold">Usuário Anônimo</p>
-              <p className="text-sm text-[#757575]">Há 2 horas</p>
-            </span>
-          </div>
+          </span>
+        )}
 
-          <button className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-300 cursor-pointer">
-            <EllipsisVertical className="text-[#757575]" />
-          </button>
+        <div className="flex flex-col gap-3">
+          <h1 className="font-semibold text-2xl text-white max-lg:text-xl">
+            {anonName}
+          </h1>
+
+          {!profileLoading && profile && (
+            <div className="flex items-center gap-4 text-sm text-white/80">
+              <span>
+                <strong className="text-white">{posts.length}</strong> desabafos
+              </span>
+              <button
+                onClick={() => setListModal("followers")}
+                className="cursor-pointer hover:text-white transition-colors">
+                <strong className="text-white">
+                  {profile.followersCount}
+                </strong>{" "}
+                seguidores
+              </button>
+              <button
+                onClick={() => setListModal("following")}
+                className="cursor-pointer hover:text-white transition-colors">
+                <strong className="text-white">
+                  {profile.followingCount}
+                </strong>{" "}
+                a seguir
+              </button>
+            </div>
+          )}
+
+          {!profileLoading && profile && (
+            <div className="flex items-center gap-2">
+              <FollowButton
+                userId={profile.id}
+                initialFollowing={profile.isFollowing}
+                requireAuth={requireAuth}
+              />
+              <Link
+                href={user ? `/home/messages/new/${profile.id}` : "#"}
+                onClick={(e) => {
+                  if (!requireAuth()) e.preventDefault();
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm text-white cursor-pointer transition-all duration-200"
+                style={{
+                  background: "rgba(255,255,255,0.15)",
+                  border: "1px solid rgba(255,255,255,0.30)",
+                }}>
+                <MessageCircle size={16} />
+              </Link>
+            </div>
+          )}
         </div>
-
-        <p className="text-lg">
-          Este é um exemplo de desabafo anônimo. Sinta-se à vontade para
-          compartilhar suas histórias e experiências aqui. A plataforma é
-          totalmente anônima e segura.
-        </p>
-
-        <ul className="flex items-center justify-between gap-4 font-semibold text-lg mt-4">
-          <li className="w-full">
-            <button className="w-full flex justify-center items-center p-2 rounded-md hover:bg-gray-100 transition-colors duration-300 gap-2 cursor-pointer">
-              <Heart /> Apoiar
-            </button>
-          </li>
-          <li className="w-full">
-            <button className="flex w-full justify-center p-2 rounded-md hover:bg-gray-100 transition-colors duration-300 items-center gap-2 cursor-pointer">
-              <MessageCircle />
-              Comentar
-            </button>
-          </li>
-          <li className="w-full">
-            <button className="flex hover:bg-gray-100 w-full justify-center items-center p-2 rounded-md transition-colors duration-300 gap-2 cursor-pointer">
-              <Forward />
-              Partilhar
-            </button>
-          </li>
-        </ul>
       </div>
+
+      <h1 className="text-lg font-bold text-left w-full">DESABAFOS</h1>
+
+      <div className="w-full flex flex-col gap-4">
+        {loading || error ? (
+          <PostSkeletonList />
+        ) : posts.length > 0 ? (
+          posts.map((post) => (
+            <Post
+              key={post.id}
+              post={post}
+              refetch={refetch}
+            />
+          ))
+        ) : (
+          <p className="text-center text-gray-500">
+            Nenhum desabafo encontrado.
+          </p>
+        )}
+      </div>
+
+      {listModal && profile && (
+        <FollowListModal
+          userId={profile.id}
+          type={listModal}
+          onClose={() => {
+            setListModal(null);
+            refetchProfile();
+          }}
+        />
+      )}
     </>
   );
 }

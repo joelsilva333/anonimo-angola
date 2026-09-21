@@ -20,6 +20,20 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Backend (API)
+
+The Express + TypeORM API lives in [`server/`](server) as its own package, so it can keep its own `package.json`, migrations and deploy target while still being versioned in this same repository.
+
+```bash
+# first time only
+yarn server:install
+
+# runs Next.js (3000) and the API (8080) together
+yarn dev
+```
+
+The frontend talks to the API through the proxy at `src/app/api/[[...path]]/route.ts`, controlled by `API_SECRET_URL` in `.env` (set to `http://localhost:8080` for local dev). See `server/.env.example` for the API's own environment variables (Postgres, JWT, Firebase, Gemini).
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

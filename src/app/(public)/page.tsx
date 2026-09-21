@@ -10,6 +10,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { useGetPosts } from "../hooks/post";
 import { motion, AnimatePresence } from "framer-motion";
 import Post from "../ui/Post";
+import { PostSkeletonList } from "../ui/PostSkeleton";
 import { getProfilePictureUrl } from "../utils/getProfilePicture";
 
 interface FormData {
@@ -20,7 +21,15 @@ export default function Home() {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const { user } = useUser();
   const [loading, setLoading] = useState<boolean>(false);
-  const { posts, refetch } = useGetPosts();
+  const {
+    posts,
+    loading: postsLoading,
+    loadingMore,
+    hasMore,
+    error: postsError,
+    loadMore,
+    refetch,
+  } = useGetPosts();
   const [charCount, setCharCount] = useState(0);
   const MAX_CHARS = 1000;
 
@@ -106,22 +115,42 @@ export default function Home() {
         <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.08)" }} />
       </div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="w-full flex flex-col gap-4">
-        {posts.map((post) => (
-          <motion.div
-            key={post.id}
-            variants={item}>
-            <Post
-              post={post}
-              refetch={refetch}
-            />
-          </motion.div>
-        ))}
-      </motion.div>
+      {postsLoading || postsError ? (
+        <PostSkeletonList />
+      ) : (
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="w-full flex flex-col gap-4">
+          {posts.length === 0 ? (
+            <p className="text-sm text-center text-gray-400 py-8">
+              Ainda não há desabafos por aqui.
+            </p>
+          ) : (
+            posts.map((post) => (
+              <motion.div
+                key={post.id}
+                variants={item}>
+                <Post
+                  post={post}
+                  refetch={refetch}
+                />
+              </motion.div>
+            ))
+          )}
+        </motion.div>
+      )}
+
+      {!postsLoading && !postsError && posts.length > 0 && hasMore && (
+        <button
+          type="button"
+          onClick={loadMore}
+          disabled={loadingMore}
+          className="text-sm font-semibold text-secondary cursor-pointer hover:underline self-center py-2 disabled:opacity-50">
+          {loadingMore ? "A carregar..." : "Carregar mais desabafos"}
+        </button>
+      )}
 
       <AnimatePresence>
         {modalOpen && (

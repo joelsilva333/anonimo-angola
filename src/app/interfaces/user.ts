@@ -7,4 +7,6 @@ export default interface UserInterface {
 	created_at: Date
 	last_login_at: Date
 	is_active: boolean
+	google_linked?: boolean
+	onboarding_completed?: boolean
 }

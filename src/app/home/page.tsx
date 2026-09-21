@@ -9,13 +9,17 @@ import { useUser } from "../hooks/user";
 import { toast, ToastContainer } from "react-toastify";
 import Post from "../ui/Post";
 import SponsorBanner from "../ui/SponsorBanner";
+import { PostSkeletonList } from "../ui/PostSkeleton";
+import PhoneRecoveryBanner from "../ui/PhoneRecoveryBanner";
 import { useGetPosts } from "../hooks/post";
 import { useGetSponsors } from "../hooks/get-sponsors";
 import { motion, AnimatePresence } from "framer-motion";
 import { getProfilePictureUrl } from "../utils/getProfilePicture";
 
 const POSTS_BETWEEN_SPONSORS = 4;
-interface FormData { text: string; }
+interface FormData {
+  text: string;
+}
 
 const glassCard = {
   background: "rgba(255,255,255,0.62)",
@@ -32,15 +36,31 @@ export default function Home() {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const { user } = useUser();
   const [loading, setLoading] = useState<boolean>(false);
-  const { posts, refetch } = useGetPosts();
+  const {
+    posts,
+    loading: postsLoading,
+    loadingMore,
+    hasMore,
+    error: postsError,
+    loadMore,
+    refetch,
+  } = useGetPosts();
   const { sponsors } = useGetSponsors();
   const [charCount, setCharCount] = useState(0);
   const [moderationAlert, setModerationAlert] = useState<string | null>(null);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FormData>();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    if (!user?.id) { toast.error("Você precisa estar logado para postar."); return; }
+    if (!user?.id) {
+      toast.error("Você precisa estar logado para postar.");
+      return;
+    }
     try {
       setLoading(true);
       const response = await api.post(`/posts`, data);
@@ -50,7 +70,7 @@ export default function Home() {
         setCharCount(0);
         setModalOpen(false);
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       // Moderação e análise de segurança em tempo real (IA): conteúdo impedido de ser publicado.
       if (error?.response?.data?.code === "MODERATION_BLOCKED") {
@@ -60,16 +80,28 @@ export default function Home() {
         );
         return;
       }
-      toast.error(error?.response?.data?.error || "Erro ao criar post. Tente novamente.");
-    } finally { setLoading(false); }
+      toast.error(
+        error?.response?.data?.error || "Erro ao criar post. Tente novamente.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } };
-  const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
+  const container = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  };
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+  };
 
   return (
     <>
       <ToastContainer theme="colored" />
+
+      <PhoneRecoveryBanner />
 
       {/* ── Saudação ── */}
       <motion.div
@@ -77,12 +109,22 @@ export default function Home() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="w-full flex flex-col gap-1 pt-8 max-lg:text-center"
-        style={{ fontFamily: "'Raleway', sans-serif" }}
-      >
-        <h1 className="text-3xl max-lg:text-2xl" style={{ fontWeight: 700, color: "#1e1e1e", letterSpacing: "-0.01em" }}>
-          Olá, <span style={{ color: "#85cc84" }}>{user?.anon_name || "Anônimo"}</span> 👋
+        style={{ fontFamily: "'Raleway', sans-serif" }}>
+        <h1
+          className="text-3xl max-lg:text-2xl"
+          style={{
+            fontWeight: 700,
+            color: "#1e1e1e",
+            letterSpacing: "-0.01em",
+          }}>
+          Olá,{" "}
+          <span style={{ color: "#85cc84" }}>
+            {user?.anon_name || "Anônimo"}
+          </span>
         </h1>
-        <p className="text-sm" style={{ color: "rgba(30,30,30,0.52)", fontWeight: 400 }}>
+        <p
+          className="text-sm"
+          style={{ color: "rgba(30,30,30,0.52)", fontWeight: 400 }}>
           Como se sente hoje? Partilhe um desabafo com a comunidade.
         </p>
       </motion.div>
@@ -95,13 +137,15 @@ export default function Home() {
         whileHover={{ y: -2 }}
         className="w-full p-5 cursor-pointer"
         style={glassCard}
-        onClick={() => setModalOpen(true)}
-      >
+        onClick={() => setModalOpen(true)}>
         <div className="flex items-center gap-3">
           {user?.profile_picture && (
             <Image
               src={getProfilePictureUrl(user.profile_picture)}
-              width={40} height={40} unoptimized alt=""
+              width={40}
+              height={40}
+              unoptimized
+              alt=""
               className="rounded-full object-cover w-10 h-10 shrink-0"
               style={{ border: "2px solid rgba(133,204,132,0.35)" }}
             />
@@ -114,48 +158,82 @@ export default function Home() {
               color: "rgba(30,30,30,0.38)",
               fontFamily: "'Raleway', sans-serif",
               fontWeight: 400,
-            }}
-          >
+            }}>
             Esteja à vontade para desabafar aqui...
           </span>
           <span
             className="p-2.5 rounded-xl shrink-0"
-            style={{ background: "rgba(133,204,132,0.18)", color: "#3d9c3c" }}
-          >
+            style={{ background: "rgba(133,204,132,0.18)", color: "#3d9c3c" }}>
             <PenLine size={16} />
           </span>
         </div>
       </motion.div>
 
       {/* ── Separador ── */}
-      <div className="w-full flex items-center gap-3" style={{ fontFamily: "'Raleway', sans-serif" }}>
-        <Sparkles size={14} style={{ color: "#85cc84" }} />
-        <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: "rgba(30,30,30,0.45)" }}>
+      <div
+        className="w-full flex items-center gap-3"
+        style={{ fontFamily: "'Raleway', sans-serif" }}>
+        <Sparkles
+          size={14}
+          style={{ color: "#85cc84" }}
+        />
+        <span
+          className="text-xs font-semibold tracking-widest uppercase"
+          style={{ color: "rgba(30,30,30,0.45)" }}>
           Últimos Desabafos
         </span>
         <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.08)" }} />
       </div>
 
       {/* ── Feed ── */}
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="w-full flex flex-col gap-4"
-      >
-        {posts.map((post, index) => {
-          const sponsorSlot =
-            sponsors.length > 0 && index > 0 && index % POSTS_BETWEEN_SPONSORS === 0
-              ? sponsors[(index / POSTS_BETWEEN_SPONSORS - 1) % sponsors.length]
-              : null;
-          return (
-            <motion.div key={post.id} variants={item} className="w-full flex flex-col gap-4">
-              {sponsorSlot && <SponsorBanner sponsor={sponsorSlot} />}
-              <Post post={post} refetch={refetch} />
-            </motion.div>
-          );
-        })}
-      </motion.div>
+      {postsLoading || postsError ? (
+        <PostSkeletonList />
+      ) : (
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="w-full flex flex-col gap-4">
+          {posts.length === 0 ? (
+            <p className="text-sm text-center text-gray-400 py-8">
+              Ainda não há desabafos por aqui. Sê o primeiro a partilhar.
+            </p>
+          ) : (
+            posts.map((post, index) => {
+              const sponsorSlot =
+                sponsors.length > 0 &&
+                index > 0 &&
+                index % POSTS_BETWEEN_SPONSORS === 0
+                  ? sponsors[
+                      (index / POSTS_BETWEEN_SPONSORS - 1) % sponsors.length
+                    ]
+                  : null;
+              return (
+                <motion.div
+                  key={post.id}
+                  variants={item}
+                  className="w-full flex flex-col gap-4">
+                  {sponsorSlot && <SponsorBanner sponsor={sponsorSlot} />}
+                  <Post
+                    post={post}
+                    refetch={refetch}
+                  />
+                </motion.div>
+              );
+            })
+          )}
+        </motion.div>
+      )}
+
+      {!postsLoading && !postsError && posts.length > 0 && hasMore && (
+        <button
+          type="button"
+          onClick={loadMore}
+          disabled={loadingMore}
+          className="text-sm font-semibold text-secondary cursor-pointer hover:underline self-center py-2 disabled:opacity-50">
+          {loadingMore ? "A carregar..." : "Carregar mais desabafos"}
+        </button>
+      )}
 
       {/* ── Modal: Novo Desabafo ── */}
       <AnimatePresence>
@@ -165,8 +243,10 @@ export default function Home() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex justify-center items-center p-4"
-            style={{ background: "rgba(0,0,0,0.35)", backdropFilter: "blur(12px)" }}
-          >
+            style={{
+              background: "rgba(0,0,0,0.35)",
+              backdropFilter: "blur(12px)",
+            }}>
             <motion.form
               initial={{ scale: 0.93, opacity: 0, y: 16 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -181,21 +261,27 @@ export default function Home() {
                 borderRadius: "28px",
                 boxShadow: "0 24px 64px rgba(30,30,30,0.20)",
                 fontFamily: "'Raleway', sans-serif",
-              }}
-            >
+              }}>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-3">
                   {user?.profile_picture && (
                     <Image
                       src={getProfilePictureUrl(user.profile_picture)}
-                      width={38} height={38} unoptimized alt=""
+                      width={38}
+                      height={38}
+                      unoptimized
+                      alt=""
                       className="rounded-full object-cover w-10 h-10"
                       style={{ border: "2px solid rgba(133,204,132,0.35)" }}
                     />
                   )}
                   <div>
-                    <p className="font-semibold text-gray-800 text-sm">{user?.anon_name}</p>
-                    <p className="text-xs text-gray-400">Partilhando anonimamente</p>
+                    <p className="font-semibold text-gray-800 text-sm">
+                      {user?.anon_name}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Partilhando anonimamente
+                    </p>
                   </div>
                 </span>
                 <motion.button
@@ -203,18 +289,25 @@ export default function Home() {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   className="p-2 rounded-full cursor-pointer hover:bg-black/5 transition-colors"
-                  onClick={() => setModalOpen(false)}
-                >
-                  <X size={18} className="text-gray-500" />
+                  onClick={() => setModalOpen(false)}>
+                  <X
+                    size={18}
+                    className="text-gray-500"
+                  />
                 </motion.button>
               </div>
 
               <div className="relative">
                 <textarea
-                  rows={7} autoFocus disabled={loading}
+                  rows={7}
+                  autoFocus
+                  disabled={loading}
                   {...register("text", {
                     required: "O texto é obrigatório",
-                    maxLength: { value: MAX_CHARS, message: `Máximo de ${MAX_CHARS} caracteres.` },
+                    maxLength: {
+                      value: MAX_CHARS,
+                      message: `Máximo de ${MAX_CHARS} caracteres.`,
+                    },
                   })}
                   onChange={(e) => setCharCount(e.target.value.length)}
                   className="w-full resize-none outline-none text-base leading-relaxed"
@@ -230,23 +323,30 @@ export default function Home() {
                 />
                 <span
                   className="absolute bottom-3 right-4 text-xs"
-                  style={{ color: charCount > MAX_CHARS * 0.9 ? "#ef4444" : "rgba(30,30,30,0.35)" }}
-                >
+                  style={{
+                    color:
+                      charCount > MAX_CHARS * 0.9
+                        ? "#ef4444"
+                        : "rgba(30,30,30,0.35)",
+                  }}>
                   {charCount}/{MAX_CHARS}
                 </span>
               </div>
-              {errors.text && <p className="text-xs text-red-500">{errors.text.message}</p>}
+              {errors.text && (
+                <p className="text-xs text-red-500">{errors.text.message}</p>
+              )}
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={loading}
-                className="btn-primary"
-              >
+                className="btn-primary">
                 {loading ? (
                   <div className="w-5 h-5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                ) : "Partilhar Desabafo"}
+                ) : (
+                  "Partilhar Desabafo"
+                )}
               </motion.button>
             </motion.form>
           </motion.div>
@@ -261,8 +361,10 @@ export default function Home() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex justify-center items-center p-4"
-            style={{ background: "rgba(0,0,0,0.35)", backdropFilter: "blur(12px)" }}
-          >
+            style={{
+              background: "rgba(0,0,0,0.35)",
+              backdropFilter: "blur(12px)",
+            }}>
             <motion.div
               initial={{ scale: 0.93, opacity: 0, y: 16 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -276,12 +378,13 @@ export default function Home() {
                 borderRadius: "28px",
                 boxShadow: "0 24px 64px rgba(30,30,30,0.20)",
                 fontFamily: "'Raleway', sans-serif",
-              }}
-            >
+              }}>
               <div
                 className="p-4 rounded-3xl mb-3 flex items-center justify-center"
-                style={{ background: "rgba(239,68,68,0.12)", color: "#ef4444" }}
-              >
+                style={{
+                  background: "rgba(239,68,68,0.12)",
+                  color: "#ef4444",
+                }}>
                 <ShieldAlert size={32} />
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">
@@ -291,16 +394,15 @@ export default function Home() {
                 {moderationAlert}
               </p>
               <p className="text-xs text-gray-400 mb-6">
-                Este é um espaço de acolhimento para todos — por isso não permitimos discurso de
-                ódio ou partilha de dados pessoais de terceiros. Podes editar o teu texto e tentar
-                novamente.
+                Este é um espaço de acolhimento para todos — por isso não
+                permitimos discurso de ódio ou partilha de dados pessoais de
+                terceiros. Podes editar o teu texto e tentar novamente.
               </p>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setModerationAlert(null)}
-                className="btn-primary"
-              >
+                className="btn-primary">
                 Entendi, vou rever o texto
               </motion.button>
             </motion.div>

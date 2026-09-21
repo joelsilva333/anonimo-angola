@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Search, Menu as MenuIcon, X } from "lucide-react";
+import { Bell, MessageCircle, Search, Menu as MenuIcon, X, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getProfilePictureUrl } from "../utils/getProfilePicture";
 import NotificationModal from "./NotificationModal";
 import { api } from "../api/config";
+import { getSocket } from "../lib/socket";
 
 export default function Header() {
   const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
@@ -17,6 +18,7 @@ export default function Header() {
   const [isMobileNavOpen, setMobileNavOpen] = useState<boolean>(false);
   const [scrolled, setScrolled] = useState(false);
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [messageUnreadCount, setMessageUnreadCount] = useState<number>(0);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -42,6 +44,47 @@ export default function Header() {
       fetchUnreadCount();
     }
   }, [isNotifOpen]);
+
+  const fetchMessageUnreadCount = async () => {
+    try {
+      const response = await api.get("/messages/conversations");
+      const total = (response.data || []).reduce(
+        (sum: number, c: { unreadCount: number }) => sum + c.unreadCount,
+        0,
+      );
+      setMessageUnreadCount(total);
+    } catch (error) {
+      console.error("Erro ao carregar contagem de mensagens:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      fetchMessageUnreadCount();
+    }
+     
+  }, []);
+
+  // Tempo real: incrementa as contagens assim que chega algo novo, sem
+  // esperar pelo próximo poll manual (só liga se o backend tiver
+  // Socket.io activo — em ambiente serverless simplesmente não conecta).
+  useEffect(() => {
+    if (!isAuthenticated()) return;
+
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleNewNotification = () => setUnreadCount((prev) => prev + 1);
+    const handleNewMessage = () => setMessageUnreadCount((prev) => prev + 1);
+    socket.on("notification", handleNewNotification);
+    socket.on("message", handleNewMessage);
+
+    return () => {
+      socket.off("notification", handleNewNotification);
+      socket.off("message", handleNewMessage);
+    };
+     
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -150,6 +193,21 @@ export default function Header() {
           <div
             ref={containerRef}
             className="flex gap-4 relative w-full max-w-xs items-center justify-end">
+            {/* Painel admin — só visível para administradores */}
+            {user?.role === "admin" && (
+              <Link
+                href="/admin"
+                title="Painel administrativo"
+                className="p-2 rounded-full relative cursor-pointer transition-all duration-200"
+                style={{
+                  background: "rgba(255,255,255,0.65)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255,255,255,0.35)",
+                }}>
+                <ShieldCheck size={18} className="text-gray-700" />
+              </Link>
+            )}
+
             {/* Sino */}
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -172,10 +230,34 @@ export default function Header() {
               />
             </motion.button>
 
+            {/* Mensagens */}
+            <Link
+              href="/home/messages"
+              onClick={() => {
+                setMenuOpen(false);
+                setNotifOpen(false);
+              }}
+              className="p-2 rounded-full relative cursor-pointer transition-all duration-200"
+              style={{
+                background: "rgba(255,255,255,0.65)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(255,255,255,0.35)",
+              }}>
+              {messageUnreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 flex justify-center items-center bg-secondary rounded-full animate-pulse text-white text-[10px] font-bold">
+                  {messageUnreadCount}
+                </span>
+              )}
+              <MessageCircle
+                size={18}
+                className="text-gray-700"
+              />
+            </Link>
+
             <AnimatePresence>
               {isNotifOpen && (
                 <motion.div
-                  className="absolute right-12 top-12 z-20"
+                  className="absolute right-12 max-lg:right-0 top-12 z-20"
                   initial={{ opacity: 0, y: -8, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.97 }}

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Header from "../ui/Header";
+import AuthGuard from "../ui/AuthGuard";
+import OnboardingGuard from "../ui/OnboardingGuard";
 
 export const metadata: Metadata = {
   title: { default: "Feed", template: "%s | Anônimo Angola" },
@@ -17,6 +19,8 @@ export default function HomeLayout({
         flexDirection: "column",
         fontFamily: "'Raleway', sans-serif",
       }}>
+      <AuthGuard />
+      <OnboardingGuard />
       <Header />
 
       <div

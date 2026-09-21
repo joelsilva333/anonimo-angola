@@ -5,12 +5,15 @@ import { PostCommentInterface } from "@/app/interfaces/comments";
 import { customFormatter } from "@/app/utils/customFormatter";
 import { EllipsisVertical, MessageCircle, Heart, Clock } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import TimeAgo from "react-timeago";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { api } from "@/app/api/config";
 import { motion, AnimatePresence } from "framer-motion";
 import { getProfilePictureUrl } from "../utils/getProfilePicture";
+import { toast } from "react-toastify";
+import { getSocket } from "../lib/socket";
 
 interface ReplyInput {
   text: string;
@@ -27,10 +30,10 @@ const commentStyle = {
 
 export default function Comment({
   comment,
-  refetch,
+  postId,
 }: {
   comment: PostCommentInterface;
-  refetch: (options?: any) => void;
+  postId: string;
 }) {
   const [replyMode, setReplyMode] = useState(false);
   const [answers, setAnswers] = useState(
@@ -49,6 +52,61 @@ export default function Comment({
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { register, reset, handleSubmit } = useForm<ReplyInput>();
 
+  // Actualizações em tempo real: reações e novas respostas a este comentário
+  // aparecem para todos sem recarregar a página.
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const onCommentReaction = (payload: {
+      commentId: string;
+      likesCount: number;
+    }) => {
+      if (payload.commentId !== comment.id) return;
+      setCommentLikesCount(payload.likesCount);
+    };
+
+    const onAnswerReaction = (payload: {
+      commentId: string;
+      answerId: string;
+      likesCount: number;
+    }) => {
+      if (payload.commentId !== comment.id) return;
+      setAnswers((prev) =>
+        prev.map((a) =>
+          a.id === payload.answerId ? { ...a, like: payload.likesCount } : a,
+        ),
+      );
+    };
+
+    const onNewAnswer = (payload: {
+      postId: string;
+      commentId: string;
+      answer: (typeof answers)[number];
+    }) => {
+      if (payload.postId !== postId || payload.commentId !== comment.id) return;
+      setAnswers((prev) =>
+        prev.some((a) => a.id === payload.answer.id)
+          ? prev
+          : [...prev, payload.answer].sort(
+              (a: any, b: any) =>
+                new Date(a.created_at).getTime() -
+                new Date(b.created_at).getTime(),
+            ),
+      );
+    };
+
+    socket.on("feed:comment-reaction", onCommentReaction);
+    socket.on("feed:answer-reaction", onAnswerReaction);
+    socket.on("feed:new-answer", onNewAnswer);
+
+    return () => {
+      socket.off("feed:comment-reaction", onCommentReaction);
+      socket.off("feed:answer-reaction", onAnswerReaction);
+      socket.off("feed:new-answer", onNewAnswer);
+    };
+  }, [comment.id, postId]);
+
   const isAuthenticated = (): boolean => {
     if (typeof window !== "undefined")
       return !!localStorage.getItem("user_data");
@@ -61,13 +119,16 @@ export default function Comment({
       const response = await api.post(`/answers/${comment.id}`, {
         text: data.text,
       });
-      refetch();
       if (response.status === 201 && response.data?.answer) {
+        const newAnswer = response.data.answer;
         setAnswers((prev) =>
-          [
-            ...prev,
-            { ...response.data.answer, has_reacted: false, likes: 0 },
-          ].sort(
+          // O evento de tempo real (feed:new-answer) também chega a este
+          // separador e pode ser mais rápido que esta resposta — evita
+          // duplicar caso já tenha sido inserido por ele.
+          (prev.some((a) => a.id === newAnswer.id)
+            ? prev
+            : [...prev, { ...newAnswer, has_reacted: false, likes: 0 }]
+          ).sort(
             (a: any, b: any) =>
               new Date(a.created_at).getTime() -
               new Date(b.created_at).getTime(),
@@ -75,11 +136,13 @@ export default function Comment({
         );
         setShowAnswers(true);
       }
-    } catch (error) {
-      console.error("Erro ao responder:", error);
+      reset();
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.error || "Erro ao responder. Tente novamente.",
+      );
     } finally {
       setLoading(false);
-      reset();
     }
   };
 
@@ -95,7 +158,6 @@ export default function Comment({
       await api.post(`/reactions/comment/${comment.id}`, {
         type: prev ? "dislike" : "like",
       });
-      refetch();
     } catch {
       setCommentLiked(prev);
       setCommentLikesCount(commentLikesCount);
@@ -118,7 +180,6 @@ export default function Comment({
       await api.post(`/reactions/answer/${answerId}`, {
         type: currentLiked ? "dislike" : "like",
       });
-      refetch();
     } catch {
       setAnswers((prev) =>
         prev.map((a) =>
@@ -134,7 +195,12 @@ export default function Comment({
       style={commentStyle}>
       {/* Cabeçalho */}
       <div className="flex gap-2 items-center justify-between">
-        <span className="flex gap-2.5 items-center">
+        <Link
+          href={comment.userId ? `/home/profile/${comment.userId}` : "#"}
+          onClick={(e) => {
+            if (!comment.userId) e.preventDefault();
+          }}
+          className="flex gap-2.5 items-center">
           {comment.profile_picture && (
             <Image
               src={getProfilePictureUrl(comment.profile_picture)}
@@ -147,7 +213,7 @@ export default function Comment({
             />
           )}
           <span className="flex items-center gap-1.5">
-            <p className="text-xs font-semibold text-gray-800">
+            <p className="text-xs font-semibold text-gray-800 hover:underline">
               {comment.anon_name}
             </p>
             <span className="text-gray-300 text-xs">•</span>
@@ -159,7 +225,7 @@ export default function Comment({
               />
             </span>
           </span>
-        </span>
+        </Link>
         <button className="p-1 rounded-full hover:bg-black/5 transition-colors duration-200 cursor-pointer">
           <EllipsisVertical
             size={15}
@@ -232,7 +298,14 @@ export default function Comment({
                     exit={{ opacity: 0, y: -5 }}
                     transition={{ duration: 0.2 }}
                     className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5">
+                    <Link
+                      href={
+                        answer.userId ? `/home/profile/${answer.userId}` : "#"
+                      }
+                      onClick={(e) => {
+                        if (!answer.userId) e.preventDefault();
+                      }}
+                      className="flex items-center gap-1.5">
                       {answer.profile_picture && (
                         <Image
                           src={getProfilePictureUrl(answer.profile_picture)}
@@ -243,14 +316,14 @@ export default function Comment({
                           className="rounded-full object-cover w-5 h-5"
                         />
                       )}
-                      <span className="text-[11px] text-gray-400">
+                      <span className="text-[11px] text-gray-400 hover:underline">
                         {answer.anon_name || "Anônimo"} •{" "}
                         <TimeAgo
                           date={answer.created_at || new Date()}
                           formatter={customFormatter}
                         />
                       </span>
-                    </div>
+                    </Link>
                     <p className="text-xs text-gray-700">{answer.text}</p>
                     {isAuthenticated() && (
                       <button

@@ -5,7 +5,7 @@ export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (!token?.value) {
-    if (pathname.startsWith("/home")) {
+    if (pathname.startsWith("/home") || pathname.startsWith("/admin")) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
   }
@@ -24,5 +24,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/login", "/register", "/home/:path*", "/post/:path*"],
+  matcher: ["/", "/login", "/register", "/home/:path*", "/post/:path*", "/admin/:path*"],
 };

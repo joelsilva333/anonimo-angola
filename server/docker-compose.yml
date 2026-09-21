@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-admin}
+      POSTGRES_DB: ${DB_NAME:-anonimo_angola} # <-- Adicionado para evitar erros no TypeORM
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql # <-- Corrigido para o padrão 18+ (sem o /data no final)
+    networks:
+      - postgres
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+  postgres_data:

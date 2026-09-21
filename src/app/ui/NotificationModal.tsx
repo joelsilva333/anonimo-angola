@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MessageCircle, Heart, ExternalLink, CheckCheck } from "lucide-react";
+import {
+  MessageCircle,
+  Heart,
+  ExternalLink,
+  CheckCheck,
+  UserPlus,
+} from "lucide-react";
 import Link from "next/link";
 import useGetNotifications from "../hooks/get-notifications";
 import { NotificationInterface } from "../interfaces/notification";
@@ -98,7 +104,7 @@ export default function NotificationModal({ setOpen }: NotificationModalProps) {
   };
 
   return (
-    <div className="card w-sm shadow-2xl rounded-2xl p-4 bg-white border border-gray-100 flex flex-col gap-3">
+    <div className="card w-80 max-w-[calc(100vw-2rem)] shadow-2xl rounded-2xl p-4 bg-white border border-gray-100 flex flex-col gap-3">
       {/* Cabeçalho */}
       <div className="flex items-start justify-between border-b border-gray-100 pb-2 gap-2 w-full">
         <div className="flex items-center gap-2">
@@ -139,7 +145,13 @@ export default function NotificationModal({ setOpen }: NotificationModalProps) {
           notifications.map((notif) => (
             <Link
               key={notif.id}
-              href={notif.targetType === 'POST' ? `/home/post/${notif.targetId}` : '#'}
+              href={
+                notif.type === "FOLLOW"
+                  ? `/home/profile/${notif.senderId}`
+                  : notif.targetType === "POST"
+                    ? `/home/post/${notif.targetId}`
+                    : "#"
+              }
               onClick={() => handleMarkAsRead(notif.id)}
               className={`flex items-center justify-between p-2.5 rounded-xl transition gap-2 w-full ${
                 !notif.isRead
@@ -153,6 +165,8 @@ export default function NotificationModal({ setOpen }: NotificationModalProps) {
                       size={14}
                       fill="currentColor"
                     />
+                  ) : notif.type === "FOLLOW" ? (
+                    <UserPlus size={14} />
                   ) : (
                     <MessageCircle size={14} />
                   )}
@@ -161,7 +175,9 @@ export default function NotificationModal({ setOpen }: NotificationModalProps) {
                   <span className="font-semibold">
                     {notif.sender.anon_name}
                   </span>{" "}
-                  {notif.type === "LIKE" ? "curtiu" : "comentou"} o seu {notif.targetType === "POST" ? "post" : "comentário"}.
+                  {notif.type === "FOLLOW"
+                    ? "começou a seguir-te."
+                    : `${notif.type === "LIKE" ? "curtiu" : "comentou"} o seu ${notif.targetType === "POST" ? "post" : "comentário"}.`}
                 </p>
               </div>
 
