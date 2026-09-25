@@ -214,7 +214,13 @@ const router = Router();
  * @swagger
  * /comments/{id}:
  *   delete:
- *     summary: Deletar um comentário (autor do comentário ou dono do post)
+ *     summary: Apagar um comentário (autor do comentário, dono do post, ou admin)
+ *     description: >
+ *       Quando quem apaga é um admin a remover o comentário de outra pessoa,
+ *       o comentário não desaparece — fica com o texto substituído por
+ *       "Comentário removido pelo admin." (`removed: "soft"`). Em qualquer
+ *       outro caso (o próprio autor, ou o dono do post a remover um
+ *       comentário alheio), é uma remoção definitiva (`removed: "hard"`).
  *     tags: [Comments]
  *     security:
  *       - bearerAuth: []
@@ -225,10 +231,11 @@ const router = Router();
  *           type: string
  *           format: uuid
  *         required: true
- *         description: ID do comentário a ser deletado
+ *         description: ID do comentário a ser apagado
  *     responses:
- *       204:
- *         description: Comentário deletado com sucesso
+ *       200:
+ *         description: >
+ *           "{ removed: 'hard' }" ou "{ removed: 'soft', comment: { id, text, status } }"
  *       401:
  *         description: Não autenticado
  *       500:

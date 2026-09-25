@@ -140,9 +140,20 @@ class CommentController {
         return res.status(400).json({ error: "ID do comentário inválido" });
       }
 
-      await this.commentService.delete(id, userId);
+      const result = await this.commentService.delete(id, userId);
 
-      return res.status(204).send();
+      if (result.removed === "soft" && result.comment) {
+        return res.status(200).json({
+          removed: "soft",
+          comment: {
+            id: result.comment.id,
+            text: result.comment.text,
+            status: result.comment.status,
+          },
+        });
+      }
+
+      return res.status(200).json({ removed: "hard" });
     } catch (error) {
       console.error(error);
       return res.status(500).json({

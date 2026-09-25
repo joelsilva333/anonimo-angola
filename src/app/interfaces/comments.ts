@@ -18,7 +18,7 @@ export interface CommentInterface {
 
 export interface PostCommentInterface {
   id: string;
-  userId: string;
+  userId: string | null;
   anon_name: string;
   profile_picture: string;
   text: string;
@@ -28,7 +28,7 @@ export interface PostCommentInterface {
   dislike: number;
   has_reacted: boolean | null;
   reaction_type: "like" | "dislike" | null;
-  status: "active" | "flagged" | "deleted";
+  status: "active" | "flagged" | "deleted" | "removed_by_admin";
   answers: AnswerInterface[];
   /** Marca este comentário como a primeira resposta gerada automaticamente pela IA (Gemini). */
   is_ai_welcome?: boolean;

@@ -170,7 +170,10 @@ export class CommentService {
     return this.commentRepository.findById(id);
   }
 
-  async delete(id: string, userId: string): Promise<void> {
+  async delete(
+    id: string,
+    userId: string,
+  ): Promise<{ removed: "hard" | "soft"; comment?: Comment }> {
     const user = await this.userRepository.findById(userId);
 
     if (!user) {
@@ -183,10 +186,40 @@ export class CommentService {
       throw new Error("Comentário não encontrado");
     }
 
-    if (userId !== comment.post.user.id && userId !== comment.user.id) {
+    const isAdmin = user.role === "admin";
+    const isCommentAuthor = userId === comment.user.id;
+    const isPostOwner = userId === comment.post.user.id;
+
+    if (!isAdmin && !isCommentAuthor && !isPostOwner) {
       throw new Error("Não tem permissão para apagar o comentário");
     }
 
+    // Um admin a remover o comentário de outra pessoa fica registado como
+    // tal (transparência de moderação) em vez de simplesmente desaparecer.
+    // O próprio autor, o dono do post, ou um admin a apagar o seu próprio
+    // comentário, continuam a ser uma remoção normal e definitiva.
+    if (isAdmin && !isCommentAuthor) {
+      comment.text = "Comentário removido pelo admin.";
+      comment.status = "removed_by_admin";
+      const updated = await this.commentRepository.update(comment);
+
+      getIO()?.emit("feed:comment-removed", {
+        postId: comment.post.id,
+        commentId: comment.id,
+        text: updated.text,
+        status: updated.status,
+      });
+
+      return { removed: "soft", comment: updated };
+    }
+
     await this.commentRepository.delete(id);
+
+    getIO()?.emit("feed:comment-deleted", {
+      postId: comment.post.id,
+      commentId: comment.id,
+    });
+
+    return { removed: "hard" };
   }
 }

@@ -3,7 +3,7 @@
 
 import { PostCommentInterface } from "@/app/interfaces/comments";
 import { customFormatter } from "@/app/utils/customFormatter";
-import { EllipsisVertical, MessageCircle, Heart, Clock } from "lucide-react";
+import { EllipsisVertical, MessageCircle, Heart, Clock, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import TimeAgo from "react-timeago";
@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getProfilePictureUrl } from "../utils/getProfilePicture";
 import { toast } from "react-toastify";
 import { getSocket } from "../lib/socket";
+import { useUser } from "../hooks/user";
 
 interface ReplyInput {
   text: string;
@@ -31,11 +32,22 @@ const commentStyle = {
 export default function Comment({
   comment,
   postId,
+  postOwnerId,
+  onDeleted,
 }: {
   comment: PostCommentInterface;
   postId: string;
+  postOwnerId: string | null;
+  onDeleted: (
+    commentId: string,
+    softUpdate?: { text: string; status: string },
+  ) => void;
 }) {
+  const { user } = useUser();
   const [replyMode, setReplyMode] = useState(false);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [answers, setAnswers] = useState(
     (comment.answers || []).sort(
       (a: any, b: any) =>
@@ -111,6 +123,37 @@ export default function Comment({
     if (typeof window !== "undefined")
       return !!localStorage.getItem("user_data");
     return false;
+  };
+
+  const isRemovedByAdmin = comment.status === "removed_by_admin";
+  const canDelete =
+    !!user &&
+    !isRemovedByAdmin &&
+    (user.id === comment.userId ||
+      user.id === postOwnerId ||
+      user.role === "admin");
+
+  const handleDelete = async () => {
+    try {
+      setDeleting(true);
+      const response = await api.delete(`/comments/${comment.id}`);
+      if (response.data?.removed === "soft" && response.data.comment) {
+        onDeleted(comment.id, {
+          text: response.data.comment.text,
+          status: response.data.comment.status,
+        });
+      } else {
+        onDeleted(comment.id);
+      }
+      setConfirmDeleteOpen(false);
+      toast.success("Comentário removido.");
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.error || "Erro ao remover comentário.",
+      );
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const onSubmit: SubmitHandler<ReplyInput> = async (data) => {
@@ -226,19 +269,65 @@ export default function Comment({
             </span>
           </span>
         </Link>
-        <button className="p-1 rounded-full hover:bg-black/5 transition-colors duration-200 cursor-pointer">
-          <EllipsisVertical
-            size={15}
-            className="text-gray-400"
-          />
-        </button>
+        {canDelete && (
+          <div className="relative">
+            <button
+              onClick={() => setIsOptionsOpen((prev) => !prev)}
+              className="p-1 rounded-full hover:bg-black/5 transition-colors duration-200 cursor-pointer">
+              <EllipsisVertical
+                size={15}
+                className="text-gray-400"
+              />
+            </button>
+
+            <AnimatePresence>
+              {isOptionsOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-50"
+                    onClick={() => setIsOptionsOpen(false)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -6 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -6 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-1 z-20 min-w-36 max-w-[calc(100vw-2rem)] overflow-hidden"
+                    style={{
+                      background: "rgba(255,255,255,0.92)",
+                      backdropFilter: "blur(20px)",
+                      border: "1px solid rgba(255,255,255,0.50)",
+                      borderRadius: "14px",
+                      boxShadow: "0 12px 32px rgba(30,30,30,0.14)",
+                    }}>
+                    <button
+                      onClick={() => {
+                        setIsOptionsOpen(false);
+                        setConfirmDeleteOpen(true);
+                      }}
+                      className="w-full flex items-center gap-2 px-3.5 py-2.5 text-xs font-medium text-red-500 hover:bg-red-50 transition-colors duration-200 cursor-pointer">
+                      <Trash2 size={14} />
+                      Apagar comentário
+                    </button>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
-      <p className="text-sm text-gray-700 leading-relaxed">{comment.text}</p>
+      {isRemovedByAdmin ? (
+        <p className="text-sm text-gray-400 italic leading-relaxed">
+          {comment.text}
+        </p>
+      ) : (
+        <p className="text-sm text-gray-700 leading-relaxed">{comment.text}</p>
+      )}
 
       {/* Ações */}
       <div className="flex items-center gap-1">
-        {isAuthenticated() && (
+        {isAuthenticated() && !isRemovedByAdmin && (
           <>
             <button
               onClick={handleCommentLike}
@@ -392,6 +481,45 @@ export default function Comment({
           </div>
         </motion.form>
       )}
+
+      <AnimatePresence>
+        {confirmDeleteOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="card max-w-sm w-full p-6 flex flex-col gap-4"
+              style={{ fontFamily: "'Raleway', sans-serif" }}>
+              <h3 className="text-lg font-bold text-gray-900">
+                Apagar este comentário?
+              </h3>
+              <p className="text-sm text-gray-500">
+                {user?.role === "admin" && user.id !== comment.userId
+                  ? "Como és admin, o comentário fica marcado como \"Comentário removido pelo admin.\" em vez de desaparecer."
+                  : "Esta acção não pode ser desfeita."}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setConfirmDeleteOpen(false)}
+                  className="btn-secondary">
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="btn-warning">
+                  {deleting ? (
+                    <div className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                  ) : (
+                    "Apagar"
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </li>
   );
 }

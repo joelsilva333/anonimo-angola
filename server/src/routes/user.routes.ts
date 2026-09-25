@@ -239,43 +239,6 @@ const router = Router();
 
 /**
  * @swagger
- * /users/phone/{phone_number}:
- *   get:
- *     summary: Buscar um usuário pelo número de telefone
- *     description: >
- *       O telefone é armazenado cifrado; a correspondência é feita a nível
- *       aplicacional após decifrar cada registo (percorre todos os
- *       utilizadores com telefone definido). O telefone só é devolvido na
- *       resposta se quem pesquisa for o dono da conta ou um admin.
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: phone_number
- *         schema:
- *           type: string
- *         required: true
- *         description: Número de telefone (com ou sem +244)
- *         example: "+244923456789"
- *     responses:
- *       200:
- *         description: Usuário encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/PublicUser'
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
- *       500:
- *         description: >
- *           Erro interno do servidor — inclui o caso de nenhum utilizador
- *           ser encontrado com esse telefone (o endpoint não distingue com
- *           um 404 próprio)
- */
-
-/**
- * @swagger
  * /users/{id}/follow:
  *   post:
  *     summary: Seguir ou deixar de seguir um utilizador (alterna)
@@ -425,7 +388,6 @@ const router = Router();
 router.use(authMiddleware);
 router.get("/", userController.getAllUsers);
 router.get("/blocked", blockController.getBlockedList);
-router.get("/phone/:phone_number", userController.getUserByPhoneNumber);
 router.get("/:id", userController.getUserById);
 router.put("/:id", userController.updateUser);
 router.delete("/:id", userController.deleteUser);

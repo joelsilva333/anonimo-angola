@@ -111,14 +111,49 @@ export default function Post({
       );
     };
 
+    const onCommentDeleted = (payload: { postId: string; commentId: string }) => {
+      if (payload.postId !== post.id) return;
+      setComments((prev) => prev.filter((c) => c.id !== payload.commentId));
+    };
+
+    const onCommentRemoved = (payload: {
+      postId: string;
+      commentId: string;
+      text: string;
+      status: string;
+    }) => {
+      if (payload.postId !== post.id) return;
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === payload.commentId
+            ? ({ ...c, text: payload.text, status: payload.status } as typeof c)
+            : c,
+        ),
+      );
+    };
+
     socket.on("feed:post-reaction", onPostReaction);
     socket.on("feed:new-comment", onNewComment);
+    socket.on("feed:comment-deleted", onCommentDeleted);
+    socket.on("feed:comment-removed", onCommentRemoved);
 
     return () => {
       socket.off("feed:post-reaction", onPostReaction);
       socket.off("feed:new-comment", onNewComment);
+      socket.off("feed:comment-deleted", onCommentDeleted);
+      socket.off("feed:comment-removed", onCommentRemoved);
     };
   }, [post.id]);
+
+  const handleCommentDeleted = (commentId: string, softUpdate?: { text: string; status: string }) => {
+    setComments((prev) =>
+      softUpdate
+        ? prev.map((c) =>
+            c.id === commentId ? ({ ...c, ...softUpdate } as typeof c) : c,
+          )
+        : prev.filter((c) => c.id !== commentId),
+    );
+  };
 
   const isAuthenticated = (): boolean => {
     if (typeof window !== "undefined")
@@ -415,6 +450,8 @@ export default function Post({
                   key={comment.id}
                   comment={comment}
                   postId={post.id}
+                  postOwnerId={post.userId || post.user?.id || null}
+                  onDeleted={handleCommentDeleted}
                 />
               ))}
             </ul>

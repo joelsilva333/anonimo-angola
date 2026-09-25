@@ -15,36 +15,6 @@ class UserController {
     this.followService = new FollowService();
   }
 
-  getUserByPhoneNumber = async (
-    req: Request,
-    res: Response,
-  ): Promise<Response> => {
-    try {
-      const { phone_number } = req.params;
-      const phoneNumber = Array.isArray(phone_number)
-        ? phone_number[0]
-        : phone_number;
-
-      const loggedUserId = req.anon_name?.id;
-      const loggedUserRole = req.anon_name?.role;
-
-      const user = await this.userService.findByPhone(
-        phoneNumber,
-        loggedUserId,
-        loggedUserRole,
-      );
-
-      return res.status(200).json(user);
-    } catch (error) {
-      console.error(error);
-
-      return res.status(500).json({
-        error:
-          error instanceof Error ? error.message : "Erro interno do servidor",
-      });
-    }
-  };
-
   updateUser = async (req: Request, res: Response): Promise<Response> => {
     try {
       const idParam = req.params.id;

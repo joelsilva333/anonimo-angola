@@ -140,9 +140,7 @@ class PostController {
 
       return res.status(200).json({
         id: post.id,
-        userId: post.user.id,
-        anon_name: post.user.anon_name,
-        profile_picture: post.user.profile_picture,
+        ...displayIdentity(post.user),
         text: post.text,
         created_at: post.created_at,
         status: post.status,

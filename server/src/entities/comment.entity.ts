@@ -37,10 +37,10 @@ export class Comment {
 
   @Column({
     type: "enum",
-    enum: ["active", "deleted", "flagged", "edited"],
+    enum: ["active", "deleted", "flagged", "edited", "removed_by_admin"],
     default: "active",
   })
-  status!: "active" | "deleted" | "flagged";
+  status!: "active" | "deleted" | "flagged" | "removed_by_admin";
 
   @Column({ default: 0 })
   likes_count!: number;
