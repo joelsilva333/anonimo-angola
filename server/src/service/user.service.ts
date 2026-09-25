@@ -273,6 +273,9 @@ export class UserService {
       if (input.notify_comments !== undefined) user.notify_comments = input.notify_comments;
       if (input.notify_follows !== undefined) user.notify_follows = input.notify_follows;
       if (input.notify_messages !== undefined) user.notify_messages = input.notify_messages;
+      if (input.anonymous_mode !== undefined) user.anonymous_mode = input.anonymous_mode;
+      if (input.comment_permission !== undefined) user.comment_permission = input.comment_permission;
+      if (input.dm_permission !== undefined) user.dm_permission = input.dm_permission;
     }
 
     const updatedUser = await this.userRepository.update(user);

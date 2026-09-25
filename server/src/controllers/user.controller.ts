@@ -4,6 +4,7 @@ import { validate } from "class-validator";
 import { UpdateUserDTO } from "../dto/user.dto";
 import { UserService } from "../service/user.service";
 import { FollowService } from "../service/follow.service";
+import blockService from "../service/block.service";
 
 class UserController {
   private userService: UserService;
@@ -107,9 +108,10 @@ class UserController {
         loggedUserRole,
       );
 
-      const [followCounts, isFollowing] = await Promise.all([
+      const [followCounts, isFollowing, isBlocked] = await Promise.all([
         this.followService.getFollowCounts(id),
         this.followService.isFollowing(loggedUserId, id),
+        loggedUserId ? blockService.isBlocked(loggedUserId, id) : false,
       ]);
 
       return res.status(200).json({
@@ -117,6 +119,7 @@ class UserController {
         followersCount: followCounts.followers,
         followingCount: followCounts.following,
         isFollowing,
+        isBlocked,
       });
     } catch (error) {
       console.error(error);

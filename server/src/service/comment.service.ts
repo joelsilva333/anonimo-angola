@@ -11,6 +11,8 @@ import aiService from "./ai.service";
 import moderationService from "./moderation.service";
 import { ModerationBlockedError } from "../utils/errors";
 import { getIO } from "../socket";
+import { displayIdentity } from "../utils/anonymize";
+import blockService from "./block.service";
 
 export class CommentService {
   private commentRepository: CommentRepository;
@@ -44,6 +46,21 @@ export class CommentService {
 
     if (!user) {
       throw new Error("Usuário não encontrado");
+    }
+
+    if (post.user.id !== userId) {
+      if (await blockService.isBlockedEitherWay(userId, post.user.id)) {
+        throw new Error("Não podes comentar neste desabafo.");
+      }
+
+      if (
+        post.user.comment_permission === "nobody" ||
+        (post.user.comment_permission === "authenticated" && user.role === "anonymous")
+      ) {
+        throw new Error(
+          "O autor deste desabafo restringiu quem pode comentar.",
+        );
+      }
     }
 
     const cleanedText = badWordsFilter(leoProfanity.clean(input.text));
@@ -82,9 +99,7 @@ export class CommentService {
         is_ai_welcome: false,
         like: 0,
         dislike: 0,
-        userId: user.id,
-        anon_name: user.anon_name,
-        profile_picture: user.profile_picture,
+        ...displayIdentity(user),
         answers: [],
       },
     });

@@ -12,6 +12,7 @@ import { getProfilePictureUrl } from "@/app/utils/getProfilePicture";
 import Post from "../../../ui/Post";
 import { PostSkeletonList } from "../../../ui/PostSkeleton";
 import FollowButton from "../../../ui/FollowButton";
+import BlockButton from "../../../ui/BlockButton";
 import FollowListModal from "../../../ui/FollowListModal";
 
 export default function ProfilePage() {
@@ -121,6 +122,13 @@ export default function ProfilePage() {
                 }}>
                 <MessageCircle size={16} />
               </Link>
+              <BlockButton
+                userId={profile.id}
+                anonName={profile.anon_name}
+                initialBlocked={profile.isBlocked}
+                onChange={() => refetchProfile()}
+                requireAuth={requireAuth}
+              />
             </div>
           )}
         </div>

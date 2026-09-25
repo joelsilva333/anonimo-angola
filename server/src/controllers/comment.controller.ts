@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 import { CreateCommentDTO, UpdateCommentDTO } from "../dto/comment.dto";
 import { CommentService } from "../service/comment.service";
 import { ModerationBlockedError } from "../utils/errors";
+import { displayIdentity } from "../utils/anonymize";
 
 class CommentController {
   private commentService: CommentService;
@@ -170,16 +171,12 @@ class CommentController {
         text: comment.text,
         created_at: comment.created_at,
         updated_at: comment.updated_at,
-        userId: comment.user.id,
-        anon_name: comment.user.anon_name,
-        profile_picture: comment.user.profile_picture,
+        ...displayIdentity(comment.user),
         answer: comment.answers.map((answer) => ({
           id: answer.id,
           text: answer.text,
           created_at: answer.created_at,
-          userId: answer.user.id,
-          anon_name: answer.user.anon_name,
-          profile_picture: answer.user.profile_picture,
+          ...displayIdentity(answer.user),
           status: answer.status,
         })),
       });

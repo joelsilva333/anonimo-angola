@@ -10,6 +10,7 @@ import { ModerationBlockedError } from "../utils/errors";
 import { getIO } from "../socket";
 import badWordsFilter from "../utils/bad-words-filter";
 import leoProfanity from "leo-profanity";
+import blockService from "./block.service";
 
 export class MessageService {
   private conversationRepository: ConversationRepository;
@@ -66,11 +67,26 @@ export class MessageService {
     );
     if (existing) return existing;
 
-    const canTalk = await this.hasInteracted(userAId, userBId);
-    if (!canTalk) {
+    if (await blockService.isBlockedEitherWay(userAId, userBId)) {
+      throw new Error("Não podes conversar com este utilizador.");
+    }
+
+    const recipient = await this.userRepository.findById(userBId);
+    const dmPermission = recipient?.dm_permission ?? "connections";
+
+    if (dmPermission === "nobody") {
       throw new Error(
-        "Só podes iniciar conversa com alguém com quem já tenhas interagido (seguir, comentar ou responder).",
+        "Esta pessoa desactivou novos pedidos de conversa privada.",
       );
+    }
+
+    if (dmPermission === "connections") {
+      const canTalk = await this.hasInteracted(userAId, userBId);
+      if (!canTalk) {
+        throw new Error(
+          "Só podes iniciar conversa com alguém com quem já tenhas interagido (seguir, comentar ou responder).",
+        );
+      }
     }
 
     const conversation = new Conversation();

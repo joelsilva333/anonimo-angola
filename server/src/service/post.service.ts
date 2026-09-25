@@ -14,6 +14,7 @@ import { PostImpressionRepository } from "../repositories/post-impression.reposi
 import aiService, { PostAnalysisResult } from "./ai.service";
 import moderationService from "./moderation.service";
 import { ModerationBlockedError } from "../utils/errors";
+import blockService from "./block.service";
 
 export { ModerationBlockedError };
 
@@ -220,9 +221,16 @@ export class PostService {
     page = 1,
     pageSize = 15,
   ): Promise<any[]> {
-    const candidates = await this.postRepository.findCandidates(
+    const allCandidates = await this.postRepository.findCandidates(
       PostService.FEED_CANDIDATE_POOL,
     );
+
+    const hiddenUserIds = currentUserId
+      ? await blockService.getHiddenUserIds(currentUserId)
+      : new Set<string>();
+    const candidates = hiddenUserIds.size
+      ? allCandidates.filter((p) => !hiddenUserIds.has(p.user.id))
+      : allCandidates;
 
     if (!currentUserId) {
       const chronological = candidates.slice(

@@ -10,6 +10,7 @@ import aiService from "./ai.service";
 import moderationService from "./moderation.service";
 import { ModerationBlockedError } from "../utils/errors";
 import { getIO } from "../socket";
+import { displayIdentity } from "../utils/anonymize";
 
 export class AnswerService {
   private answerRepository: AnswerRepository;
@@ -94,9 +95,7 @@ export class AnswerService {
         status: savedAnswer.status,
         like: 0,
         dislike: 0,
-        userId: user.id,
-        anon_name: user.anon_name,
-        profile_picture: user.profile_picture,
+        ...displayIdentity(user),
       },
     });
 

@@ -10,7 +10,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { Eye, EyeOff, User, Lock, CheckCircle2 } from "lucide-react";
+import Cookies from "universal-cookie";
+import { Eye, EyeOff, User, Lock } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 
 interface FormData {
@@ -52,29 +53,40 @@ export default function Register() {
   const [loading, setLoading] = useState<boolean>(false);
   const [showPw, setShowPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
-  const [googleToken, setGoogleToken] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
+  const cookies = new Cookies();
 
-  const handleConnectGoogle = async () => {
+  // Entrada/registo instantâneo com Google: cria a conta na hora (sem senha,
+  // sem nome definitivo ainda) e já fica logado — escolher o nome anónimo
+  // definitivo acontece depois, dentro da app, através do OnboardingGuard.
+  const handleGoogleLogin = async () => {
     try {
       setGoogleLoading(true);
       const credential = await signInWithPopup(auth, new GoogleAuthProvider());
       const idToken = await credential.user.getIdToken();
-      setGoogleToken(idToken);
-      toast.success(
-        "Conta Google conectada! Termina o registo abaixo para vincular.",
-      );
+
+      const response = await api.post("/auth/google/login", {
+        firebase_token: idToken,
+      });
+
+      localStorage.setItem("user_data", JSON.stringify(response.data.user));
+      cookies.set("aa_token", response.data.token, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+      router.push(response.data.user.role === "admin" ? "/admin" : "/home");
     } catch (error: any) {
-      console.error("Erro ao conectar com o Google:", error);
+      console.error("Erro ao continuar com o Google:", error);
       if (error?.code === "auth/popup-closed-by-user") {
         // O utilizador fechou o popup — não é um erro, não mostra toast.
         return;
       }
       toast.error(
-        error?.code
-          ? `Não foi possível conectar com o Google (${error.code}).`
-          : "Não foi possível conectar com o Google. Tenta novamente.",
+        error?.response?.data?.error ||
+          (error?.code
+            ? `Não foi possível continuar com o Google (${error.code}).`
+            : "Não foi possível continuar com o Google. Tenta novamente."),
       );
     } finally {
       setGoogleLoading(false);
@@ -87,7 +99,6 @@ export default function Register() {
       await api.post("/auth/register", {
         anon_name: data.username,
         password: data.password,
-        google_token: googleToken || undefined,
       });
       toast.success("Perfil criado com sucesso!");
       router.push("/login");
@@ -128,32 +139,25 @@ export default function Register() {
           </p>
         </div>
 
-        {/* Google (opcional): liga a conta já na criação para login rápido depois */}
-        {googleToken ? (
-          <div className="flex items-center gap-2 p-3 bg-emerald-50 text-emerald-700 rounded-2xl text-sm font-medium">
-            <CheckCircle2 size={16} />
-            Conta Google conectada — será vinculada ao concluíres o registo
-          </div>
-        ) : (
-          <button
-            type="button"
-            disabled={googleLoading}
-            onClick={handleConnectGoogle}
-            className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-2xl font-semibold text-sm text-gray-700 cursor-pointer transition-colors duration-200 hover:bg-black/5"
-            style={{
-              background: "rgba(255,255,255,0.6)",
-              border: "1px solid rgba(0,0,0,0.10)",
-            }}>
-            {googleLoading ? (
-              <div className="w-4 h-4 rounded-full border-2 border-gray-400/40 border-t-gray-600 animate-spin" />
-            ) : (
-              <>
-                <FcGoogle size={18} />
-                Continuar com Google (opcional)
-              </>
-            )}
-          </button>
-        )}
+        {/* Google: entra/cria conta na hora — o nome anónimo definitivo escolhe-se já dentro da app */}
+        <button
+          type="button"
+          disabled={googleLoading}
+          onClick={handleGoogleLogin}
+          className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-2xl font-semibold text-sm text-gray-700 cursor-pointer transition-colors duration-200 hover:bg-black/5"
+          style={{
+            background: "rgba(255,255,255,0.6)",
+            border: "1px solid rgba(0,0,0,0.10)",
+          }}>
+          {googleLoading ? (
+            <div className="w-4 h-4 rounded-full border-2 border-gray-400/40 border-t-gray-600 animate-spin" />
+          ) : (
+            <>
+              <FcGoogle size={18} />
+              Continuar com Google
+            </>
+          )}
+        </button>
 
         <div className="flex items-center gap-3">
           <div className="h-px flex-1 bg-black/10" />

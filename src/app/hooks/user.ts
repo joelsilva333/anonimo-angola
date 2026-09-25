@@ -11,6 +11,7 @@ export interface PublicProfile {
   followersCount: number;
   followingCount: number;
   isFollowing: boolean;
+  isBlocked: boolean;
 }
 
 export function useUserProfile(userId?: string) {

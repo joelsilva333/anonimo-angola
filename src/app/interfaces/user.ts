@@ -13,4 +13,7 @@ export default interface UserInterface {
 	notify_comments?: boolean
 	notify_follows?: boolean
 	notify_messages?: boolean
+	anonymous_mode?: boolean
+	comment_permission?: "everyone" | "authenticated" | "nobody"
+	dm_permission?: "everyone" | "connections" | "nobody"
 }

@@ -3,6 +3,7 @@ import { FollowRepository } from "../repositories/follow.repository";
 import { UserRepository } from "../repositories/user.repository";
 import { NotificationService } from "./notification.service";
 import { NotificationType, TargetType } from "../entities/notification.entity";
+import blockService from "./block.service";
 
 export class FollowService {
   private followRepository: FollowRepository;
@@ -27,6 +28,10 @@ export class FollowService {
     const target = await this.userRepository.findById(followingId);
     if (!target) {
       throw new Error("Utilizador não encontrado");
+    }
+
+    if (await blockService.isBlockedEitherWay(followerId, followingId)) {
+      throw new Error("Não podes seguir este utilizador.");
     }
 
     const existing = await this.followRepository.findByFollowerAndFollowing(

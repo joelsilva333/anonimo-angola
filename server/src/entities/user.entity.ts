@@ -7,6 +7,9 @@ import {
 
 export type UserRole = "user" | "admin" | "anonymous"
 
+export type CommentPermission = "everyone" | "authenticated" | "nobody"
+export type DmPermission = "everyone" | "connections" | "nobody"
+
 @Entity("")
 export class User {
 	@PrimaryGeneratedColumn("uuid")
@@ -79,4 +82,21 @@ export class User {
 
 	@Column({ type: "boolean", default: true })
 	notify_messages!: boolean
+
+	/**
+	 * Quando activo, a autoria dos teus desabafos/comentários/respostas deixa
+	 * de mostrar o teu nome anónimo habitual — aparece como "Anônimo" e sem
+	 * link para o perfil. Impede que alguém associe várias publicações tuas
+	 * à mesma identidade só de olhar para o feed.
+	 */
+	@Column({ type: "boolean", default: false })
+	anonymous_mode!: boolean
+
+	/** Quem pode comentar nos teus desabafos. */
+	@Column({ type: "varchar", default: "everyone" })
+	comment_permission!: CommentPermission
+
+	/** Quem pode iniciar uma conversa privada contigo. */
+	@Column({ type: "varchar", default: "connections" })
+	dm_permission!: DmPermission
 }

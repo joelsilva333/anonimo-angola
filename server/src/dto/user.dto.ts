@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -117,4 +118,16 @@ export class UpdateUserDTO {
   @IsOptional()
   @IsBoolean()
   notify_messages?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  anonymous_mode?: boolean;
+
+  @IsOptional()
+  @IsIn(["everyone", "authenticated", "nobody"])
+  comment_permission?: "everyone" | "authenticated" | "nobody";
+
+  @IsOptional()
+  @IsIn(["everyone", "connections", "nobody"])
+  dm_permission?: "everyone" | "connections" | "nobody";
 }

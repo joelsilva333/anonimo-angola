@@ -1,6 +1,7 @@
 import { Router } from "express";
 import userController from "../controllers/user.controller";
 import followController from "../controllers/follow.controller";
+import blockController from "../controllers/block.controller";
 import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
@@ -370,14 +371,67 @@ const router = Router();
  *         $ref: '#/components/responses/UnauthorizedError'
  */
 
+/**
+ * @swagger
+ * /users/{id}/block:
+ *   post:
+ *     summary: Alternar bloquear/desbloquear um utilizador (remove qualquer "seguir" nas duas direcções ao bloquear)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: "{ blocked: boolean }"
+ *       400:
+ *         description: A tentar bloquear-se a si mesmo, ou utilizador não encontrado
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ */
+
+/**
+ * @swagger
+ * /users/blocked:
+ *   get:
+ *     summary: Listar os utilizadores que bloqueei
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 50
+ *     responses:
+ *       200:
+ *         description: Lista paginada de utilizadores bloqueados
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ */
+
 router.use(authMiddleware);
 router.get("/", userController.getAllUsers);
-router.get("/:id", userController.getUserById);
+router.get("/blocked", blockController.getBlockedList);
 router.get("/phone/:phone_number", userController.getUserByPhoneNumber);
+router.get("/:id", userController.getUserById);
 router.put("/:id", userController.updateUser);
 router.delete("/:id", userController.deleteUser);
 router.post("/:id/follow", followController.toggleFollow);
 router.get("/:id/followers", followController.getFollowers);
 router.get("/:id/following", followController.getFollowing);
+router.post("/:id/block", blockController.toggleBlock);
 
 export default router;

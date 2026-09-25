@@ -3,6 +3,7 @@ import { validate } from "class-validator";
 import { Request, Response } from "express";
 import { CreatePostDTO, UpdatePostDTO } from "../dto/post.dto";
 import { ModerationBlockedError, PostService } from "../service/post.service";
+import { displayIdentity } from "../utils/anonymize";
 
 class PostController {
   private postService: PostService;
@@ -22,9 +23,7 @@ class PostController {
   private formatPostResponse(post: any) {
     return {
       id: post.id,
-      userId: post.user.id,
-      anon_name: post.user.anon_name,
-      profile_picture: post.user.profile_picture,
+      ...displayIdentity(post.user),
       text: post.text,
       like: post.likes_count || post.like || 0,
       dislike: post.dislikes_count || post.dislike || 0,
@@ -37,9 +36,7 @@ class PostController {
       theme_tags: post.theme_tags || [],
       comments: (post.comments || []).map((comment: any) => ({
         id: comment.id,
-        userId: comment.user.id,
-        anon_name: comment.user.anon_name,
-        profile_picture: comment.user.profile_picture,
+        ...displayIdentity(comment.user),
         text: comment.text,
         created_at: comment.created_at,
         updated_at: comment.updated_at,
@@ -51,9 +48,7 @@ class PostController {
         is_ai_welcome: !!comment.is_ai_welcome,
         answers: (comment.answers || []).map((answer: any) => ({
           id: answer.id,
-          userId: answer.user.id,
-          anon_name: answer.user.anon_name,
-          profile_picture: answer.user.profile_picture,
+          ...displayIdentity(answer.user),
           text: answer.text,
           created_at: answer.created_at,
           updated_at: answer.updated_at,
