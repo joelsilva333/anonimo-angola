@@ -300,12 +300,12 @@ export class PostService {
     return mappedPost[0];
   }
 
-  async findAllByUserId(userId: string): Promise<any[]> {
+  async findAllByUserId(userId: string, currentUserId?: string): Promise<any[]> {
     const user = await this.userRepository.findById(userId);
     if (!user) throw new Error("Usuário não encontrado");
-    
+
     const posts = await this.postRepository.findAllByUserId(userId);
-    return this.mapPostsWithRelationsAndReactions(posts, userId);
+    return this.mapPostsWithRelationsAndReactions(posts, currentUserId);
   }
 
   /**

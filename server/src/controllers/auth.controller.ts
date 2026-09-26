@@ -39,10 +39,12 @@ class AuthController {
         });
       }
 
-      await this.authService.register(dto);
+      const result = await this.authService.register(dto);
 
       return res.status(201).json({
         message: "Utilizador criado com sucesso",
+        user: result.user,
+        token: result.token,
       });
     } catch (error) {
       console.error(error);

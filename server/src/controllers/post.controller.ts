@@ -205,7 +205,8 @@ class PostController {
   getAllByUserId = async (req: Request, res: Response): Promise<Response> => {
     try {
       const userId = this.getRouteParamId(req.params.userId);
-      const posts = await this.postService.findAllByUserId(userId);
+      const currentUserId = req.anon_name?.id;
+      const posts = await this.postService.findAllByUserId(userId, currentUserId);
 
       return res
         .status(200)

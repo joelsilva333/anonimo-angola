@@ -292,7 +292,7 @@ export default function Comment({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -6 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-1 z-20 min-w-36 max-w-[calc(100vw-2rem)] overflow-hidden"
+                    className="absolute right-0 top-full mt-1 z-20 w-fit max-w-[calc(100vw-2rem)] overflow-hidden"
                     style={{
                       background: "rgba(255,255,255,0.92)",
                       backdropFilter: "blur(20px)",
@@ -305,8 +305,9 @@ export default function Comment({
                         setIsOptionsOpen(false);
                         setConfirmDeleteOpen(true);
                       }}
-                      className="w-full flex items-center gap-2 px-3.5 py-2.5 text-xs font-medium text-red-500 hover:bg-red-50 transition-colors duration-200 cursor-pointer">
-                      <Trash2 size={14} />
+                      className="w-fit flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors duration-200 cursor-pointer whitespace-nowrap"
+                      style={{ fontFamily: "'Raleway', sans-serif" }}>
+                      <Trash2 size={15} />
                       Apagar comentário
                     </button>
                   </motion.div>

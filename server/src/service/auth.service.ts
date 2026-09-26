@@ -44,7 +44,9 @@ export class AuthService {
     return cleaned.startsWith("244") ? `+${cleaned}` : `+244${cleaned}`;
   }
 
-  async register(input: CreateUserDTO): Promise<User> {
+  async register(
+    input: CreateUserDTO,
+  ): Promise<{ user: AuthUserResponse; token: string }> {
     // A verificação do telefone NUNCA bloqueia a criação da conta — o
     // telefone só serve para recuperação e é opcional aqui. Se for
     // enviado, exige-se prova de verificação por Firebase; caso contrário
@@ -151,11 +153,40 @@ export class AuthService {
 
     const createdUser = await this.userRepository.create(user);
 
-    if (createdUser.phone_number) {
-      createdUser.phone_number = decrypt(createdUser.phone_number);
-    }
+    const decryptedPhone = createdUser.phone_number
+      ? decrypt(createdUser.phone_number)
+      : "";
 
-    return createdUser;
+    const token = jwt.sign(
+      {
+        id: createdUser.id,
+        anon_name: createdUser.anon_name,
+        role: createdUser.role,
+      },
+      process.env.JWT_SECRET as string,
+      { expiresIn: "12h" },
+    );
+
+    return {
+      user: {
+        id: createdUser.id,
+        anon_name: createdUser.anon_name,
+        phone_number: decryptedPhone,
+        profile_picture: createdUser.profile_picture,
+        is_active: createdUser.is_active,
+        role: createdUser.role,
+        google_linked: !!createdUser.google_id_hash,
+        onboarding_completed: createdUser.onboarding_completed,
+        notify_likes: createdUser.notify_likes,
+        notify_comments: createdUser.notify_comments,
+        notify_follows: createdUser.notify_follows,
+        notify_messages: createdUser.notify_messages,
+        anonymous_mode: createdUser.anonymous_mode,
+        comment_permission: createdUser.comment_permission,
+        dm_permission: createdUser.dm_permission,
+      },
+      token,
+    };
   }
 
   async login(

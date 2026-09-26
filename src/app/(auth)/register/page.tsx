@@ -96,12 +96,19 @@ export default function Register() {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
       setLoading(true);
-      await api.post("/auth/register", {
+      const response = await api.post("/auth/register", {
         anon_name: data.username,
         password: data.password,
       });
+
+      localStorage.setItem("user_data", JSON.stringify(response.data.user));
+      cookies.set("aa_token", response.data.token, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+
       toast.success("Perfil criado com sucesso!");
-      router.push("/login");
+      router.push(response.data.user.role === "admin" ? "/admin" : "/home");
     } catch (error: any) {
       toast.error(
         error?.response?.data?.error || "Erro ao criar perfil. Tente novamente.",
